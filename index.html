@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A teia: o que está documentado, o que é alegação e o que ninguém provou</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+:root{
+  color-scheme:light;box-sizing:border-box;
+  --bg:#f5efe5;--card:#ffffff;--ink:#1c1814;--mute:#6b635a;--line:#e6ddd0;--soft:#faf5ec;
+  --V:#991b1b;  --Z:#ea580c;  --F:#1d4ed8;  --A:#7c3aed;
+  --N:#db2777;  --S:#047857;  --H:#78350f;  --B:#0891b2;
+  --E:#b45309;  --R:#0f766e;  --M:#4338ca;  --P:#65a30d;
+  --W:#be123c;  --K:#6d28d9;  --C:#9a3412;  --L:#0d9488;
+  --D:#475569;  --J:#166534;  --Q:#713f12;  --X:#701a75;
+  --sd:#0c4a6e;--sa:#d97706;--sc:#dc2626;--sv:#64748b;
+  --lane-master:#0f766e;--lane-lagoinha:#b45309;--lane-raras:#1e40af;--lane-trajetoria:#334155;
+  --tier-alta:#16a34a;--tier-media:#d97706;--tier-var:#475569;
+  --lente-meritocracia:#b45309;
+  --lente-corrupcao:#991b1b;
+  --lente-familia:#7c3aed;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#14110d;--card:#221d17;--ink:#ede6dc;--mute:#9a9086;--line:#3a342d;--soft:#1a160f;
+  --V:#fca5a5;  --Z:#fb923c;  --F:#60a5fa;  --A:#a78bfa;
+  --N:#f472b6;  --S:#34d399;  --H:#b89770;  --B:#22d3ee;
+  --E:#fdba74;  --R:#2dd4bf;  --M:#818cf8;  --P:#a3e635;
+  --W:#fda4af;  --K:#c4b5fd;  --C:#fdba74;  --L:#5eead4;
+  --D:#cbd5e1;  --J:#86efac;  --Q:#fde68a;  --X:#f5d0fe;
+  --sd:#e2e8f0;--sa:#fbbf24;--sc:#f87171;--sv:#94a3b8;
+  --lane-master:#5eead4;--lane-lagoinha:#fbbf24;--lane-raras:#60a5fa;--lane-trajetoria:#cbd5e1;
+  --tier-alta:#4ade80;--tier-media:#fbbf24;--tier-var:#cbd5e1;
+  --lente-meritocracia:#fbbf24;
+  --lente-corrupcao:#fca5a5;
+  --lente-familia:#a78bfa;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#14110d;--card:#221d17;--ink:#ede6dc;--mute:#9a9086;--line:#3a342d;--soft:#1a160f;
+  --V:#fca5a5;  --Z:#fb923c;  --F:#60a5fa;  --A:#a78bfa;
+  --N:#f472b6;  --S:#34d399;  --H:#b89770;  --B:#22d3ee;
+  --E:#fdba74;  --R:#2dd4bf;  --M:#818cf8;  --P:#a3e635;
+  --W:#fda4af;  --K:#c4b5fd;  --C:#fdba74;  --L:#5eead4;
+  --D:#cbd5e1;  --J:#86efac;  --Q:#fde68a;  --X:#f5d0fe;
+  --sd:#e2e8f0;--sa:#fbbf24;--sc:#f87171;--sv:#94a3b8;
+  --lane-master:#5eead4;--lane-lagoinha:#fbbf24;--lane-raras:#60a5fa;--lane-trajetoria:#cbd5e1;
+  --tier-alta:#4ade80;--tier-media:#fbbf24;--tier-var:#cbd5e1;
+  --lente-meritocracia:#fbbf24;
+  --lente-corrupcao:#fca5a5;
+  --lente-familia:#a78bfa;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:760px;margin:0 auto;padding:0 16px 80px}
+
+.progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--V),var(--Z),var(--S),var(--F));z-index:100;transition:width .08s}
+
+.chapter-indicator{
+  position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-80px);
+  background:var(--ink);color:var(--bg);padding:6px 16px;border-radius:999px;
+  font-size:12px;font-weight:500;z-index:40;
+  transition:transform .3s,opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;
+}
+.chapter-indicator.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+.masthead{background:var(--card);border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.masthead:before{content:"";position:absolute;inset:0;background:
+  radial-gradient(ellipse 700px 300px at 100% 0%,color-mix(in srgb,var(--V) 7%,transparent) 0%,transparent 60%),
+  radial-gradient(ellipse 500px 260px at 0% 100%,color-mix(in srgb,var(--Z) 5%,transparent) 0%,transparent 60%);pointer-events:none}
+.masthead:after{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(to right,color-mix(in srgb,var(--ink) 14%,transparent) 1px,transparent 1px),
+    linear-gradient(to bottom,color-mix(in srgb,var(--ink) 14%,transparent) 1px,transparent 1px);
+  background-size:28px 28px;
+  -webkit-mask-image:radial-gradient(ellipse 120% 140% at 100% 0%,#000 8%,transparent 60%);
+  mask-image:radial-gradient(ellipse 120% 140% at 100% 0%,#000 8%,transparent 60%);
+  opacity:.9}
+.masthead-inner{position:relative;padding:20px 16px 28px}
+@media (min-width: 600px){
+  .masthead-inner{padding:20px 24px 28px}
+}
+.masthead-inner::before,.masthead-inner::after{
+  content:"";position:absolute;top:0;bottom:0;width:12px;pointer-events:none;opacity:.85;
+  background-image:
+    linear-gradient(to right,color-mix(in srgb,var(--ink) 22%,transparent) 0,color-mix(in srgb,var(--ink) 22%,transparent) 1px,transparent 1px),
+    repeating-linear-gradient(to bottom,color-mix(in srgb,var(--ink) 32%,transparent) 0 1px,transparent 1px 140px),
+    repeating-linear-gradient(to bottom,color-mix(in srgb,var(--ink) 15%,transparent) 0 1px,transparent 1px 28px);
+  background-size:100% 100%,12px 100%,6px 100%;
+  background-position:left top,left top,left top;
+  background-repeat:no-repeat,repeat-y,repeat-y;
+}
+.masthead-inner::before{left:0}
+.masthead-inner::after{right:0;transform:scaleX(-1)}
+
+.brand-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--mute);font-weight:500;margin-bottom:26px}
+.brand-mark{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600}
+.brand-mark:before{content:"";width:6px;height:6px;background:var(--V);border-radius:50%;box-shadow:0 0 0 2px color-mix(in srgb,var(--V) 20%,transparent)}
+
+.masthead-kicker{font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--V);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.masthead-kicker:before{content:"";width:26px;height:1px;background:var(--V)}
+
+h1.masthead-title{font:700 clamp(30px,5.5vw,42px)/1.05 Newsreader,Georgia,serif;margin:0 0 14px;letter-spacing:-.02em;max-width:24ch}
+.masthead-dek{font:400 clamp(15px,1.8vw,17px)/1.5 Newsreader,Georgia,serif;color:var(--mute);margin:0 0 18px;max-width:62ch}
+.masthead-meta{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:center;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-weight:500;padding-top:14px;border-top:1px solid var(--line)}
+.masthead-meta b{color:var(--ink);font-weight:600;letter-spacing:.02em;margin-right:3px}
+.masthead-meta .dot{color:var(--line)}
+
+.front-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.front-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:500;letter-spacing:.02em;background:color-mix(in srgb,var(--fc) 10%,var(--card));color:var(--fc);border:1px solid color-mix(in srgb,var(--fc) 30%,var(--line))}
+.front-chip b{font-weight:700;font-size:12px}
+.front-chip.master{--fc:var(--lane-master)}
+.front-chip.lagoinha{--fc:var(--lane-lagoinha)}
+.front-chip.raras{--fc:var(--lane-raras)}
+.front-chip.trajetoria{--fc:var(--lane-trajetoria)}
+
+.lead{padding:26px 0;border-bottom:1px solid var(--line)}
+.lead-text{font:400 16.5px/1.6 Newsreader,Georgia,serif;color:var(--ink);margin:0 0 14px;max-width:62ch;letter-spacing:-.003em}
+.lead-sub{font:italic 400 15px/1.55 Newsreader,Georgia,serif;color:var(--mute);margin:0 0 22px;max-width:62ch}
+.lead-filters{list-style:none;padding:0;margin:0 0 22px;display:grid;gap:10px;max-width:62ch}
+.lead-filter{position:relative;display:grid;grid-template-columns:32px 1fr;gap:14px;align-items:flex-start;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--V);border-radius:0 10px 10px 0}
+.lead-filter:not(:last-child)::after{content:"";position:absolute;left:32px;bottom:-10px;width:1px;height:10px;background-image:linear-gradient(to bottom,color-mix(in srgb,var(--V) 65%,transparent) 50%,transparent 50%);background-size:1px 4px;opacity:.9;pointer-events:none}
+.lead-filter-num{font:700 18px/1 Newsreader,Georgia,serif;color:var(--V);letter-spacing:-.02em;font-feature-settings:"lnum";width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1.5px dashed color-mix(in srgb,var(--V) 50%,transparent);background:color-mix(in srgb,var(--V) 4%,var(--card));flex-shrink:0}
+.lead-filter-body{min-width:0}
+.lead-filter-title{display:block;font:700 14.5px/1.3 "IBM Plex Sans",system-ui,sans-serif;color:var(--ink);margin:0 0 4px;letter-spacing:-.003em}
+.lead-filter-desc{font:400 13.5px/1.55 Newsreader,Georgia,serif;color:var(--mute);margin:0}
+.lead-closing{font:italic 400 15.5px/1.6 Newsreader,Georgia,serif;color:var(--ink);margin:0;padding-top:18px;border-top:1px dashed var(--line);max-width:62ch}
+@media (max-width:520px){
+  .lead-filter{grid-template-columns:26px 1fr;gap:10px;padding:12px 14px}
+  .lead-filter-num{width:26px;height:26px;font-size:15px}
+  .lead-filter:not(:last-child)::after{left:27px}
+}
+
+.teia-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,color-mix(in srgb,var(--F) 8%,var(--card)) 0%,var(--card) 70%);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:22px 0;position:relative;overflow:hidden}
+.teia-cta:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--V),var(--F))}
+.teia-cta-left{display:flex;gap:14px;align-items:flex-start;flex:1;min-width:0}
+.teia-cta-icon{width:44px;height:44px;flex-shrink:0;border-radius:12px;background:linear-gradient(135deg,#991b1b,#1d4ed8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.2),inset 0 0 0 1px rgba(255,255,255,.1)}
+.teia-cta h3{font:700 17px/1.25 Newsreader,Georgia,serif;margin:0 0 4px;color:var(--ink);letter-spacing:-.005em}
+.teia-cta p{font-size:12.5px;color:var(--mute);margin:0;line-height:1.45;max-width:44ch}
+.btn-cta{background:var(--ink);color:var(--bg);border:none;border-radius:999px;padding:10px 18px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .15s;white-space:nowrap;flex-shrink:0}
+.btn-cta:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.btn-cta:focus-visible{outline:2px solid var(--F);outline-offset:2px}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:20px 0;border-bottom:1px solid var(--line);align-items:start}
+.info-panel{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--pc,var(--V));border-radius:0 10px 10px 0;overflow:hidden}
+.info-panel summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.info-panel summary::-webkit-details-marker{display:none}
+.info-panel summary:after{content:"▾";color:var(--mute);font-size:10px;transition:transform .2s}
+.info-panel[open] summary:after{transform:rotate(180deg)}
+.info-panel[open] summary{border-bottom:1px solid var(--line)}
+.info-panel-body{padding:12px 14px}
+
+.people-mini{display:grid;gap:6px}
+.person-row{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45}
+.person-row i{width:8px;height:8px;border-radius:50%;background:var(--c);flex-shrink:0;margin-top:6px}
+.person-row b{color:var(--ink);font-weight:600;margin-right:4px}
+.person-row span{color:var(--mute)}
+
+.tier-mini{display:grid;gap:8px;font-size:12.5px}
+.tier-mini-item{padding-left:10px;border-left:2px solid var(--tc);line-height:1.45}
+.tier-mini-item b{display:block;color:var(--tc);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.tier-mini-item span{color:var(--ink);font-size:12px}
+.tier-mini-item em{display:block;color:var(--mute);font-size:11.5px;font-style:normal;margin-top:3px}
+
+@media (max-width:600px){
+  .info-grid{grid-template-columns:1fr}
+  .teia-cta{flex-direction:column;align-items:stretch}
+  .btn-cta{justify-content:center}
+  .chapter-head{gap:14px;padding:18px 18px}
+  .chapter-num{width:60px;height:60px;font-size:32px}
+  .chapter-num::after{left:calc(100% + 3px);width:8px}
+  .chapter-head:after{left:18px;width:60px}
+  details.event.compact summary {grid-template-columns:1fr auto;grid-template-areas:"date status" "title title";gap:6px 10px;padding:12px 14px 12px 36px;}
+.event.anchor{padding:18px 16px 18px 36px;}
+.event.anchor::before, details.event.compact::before {
+  width:32px;
+  background-image:
+    radial-gradient(circle at 16px 16px, var(--bg) 3.5px, transparent 4px),
+    radial-gradient(circle at 16px 16px, color-mix(in srgb,var(--mute) 45%,transparent) 4.5px, transparent 5px),
+    radial-gradient(circle at 16px 50%, var(--bg) 3.5px, transparent 4px),
+    radial-gradient(circle at 16px 50%, color-mix(in srgb,var(--mute) 45%,transparent) 4.5px, transparent 5px),
+    radial-gradient(circle at 16px calc(100% - 16px), var(--bg) 3.5px, transparent 4px),
+    radial-gradient(circle at 16px calc(100% - 16px), color-mix(in srgb,var(--mute) 45%,transparent) 4.5px, transparent 5px);
+  background-size:100% 100%;background-repeat:no-repeat;
+}
+  .compact-date {grid-area:date;white-space:normal;}
+  details.event.compact summary .st {grid-area:status;justify-self:end;}
+  .compact-title {grid-area:title;font-size:14.5px;font-weight:600;line-height:1.4;padding-top:2px;}
+  .compact-chev {display:none;}
+}
+
+.filters{padding:24px 0 0}
+.f{margin:0 0 12px}
+.f b{display:block;font-weight:500;font-size:12px;color:var(--mute);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em}
+.ch{display:flex;flex-wrap:wrap;gap:6px}
+.ch button{font:inherit;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.ch button:hover{border-color:var(--c,var(--mute));transform:translateY(-1px)}
+.ch button:focus-visible{outline:2px solid var(--F);outline-offset:2px}
+.ch button i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--mute))}
+.ch button[aria-pressed="true"]{background:color-mix(in srgb,var(--c) 18%,var(--card));color:color-mix(in srgb,var(--c) 85%,var(--ink));border-color:var(--c);font-weight:500}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0 0;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.search{flex:1;min-width:160px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font:inherit;font-size:14px;color:var(--ink)}
+.search:focus{outline:none;border-color:var(--ink)}
+.search::placeholder{color:var(--mute)}
+.btn-pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-pill:hover{border-color:var(--ink)}
+.btn-pill.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn-pill:focus-visible{outline:2px solid var(--F);outline-offset:2px}
+
+.count{font-size:13px;color:var(--mute);margin:14px 0 0;font-weight:500}
+.count b{color:var(--ink);font-weight:600}
+
+.chapter-nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:16px 0;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.chapter-nav::-webkit-scrollbar{display:none}
+.chapter-nav a{white-space:nowrap;font-size:12.5px;font-weight:500;padding:5px 12px;border-radius:999px;border:1px solid var(--line);color:var(--mute);text-decoration:none;transition:all .15s}
+.chapter-nav a:hover{color:var(--ink);border-color:var(--ink);background:var(--card)}
+.chapter-nav a.active{background:var(--V);color:#fff;border-color:var(--V)}
+
+body{position:relative}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(to right,color-mix(in srgb,var(--ink) 4%,transparent) 1px,transparent 1px),
+    linear-gradient(to bottom,color-mix(in srgb,var(--ink) 4%,transparent) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.view, .teia-overlay, .float {position:relative;z-index:1}
+main{padding:24px 0}
+.chapter{margin:0 0 56px;scroll-margin-top:80px}
+.chapter-head{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;padding:22px 26px;margin-bottom:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--chapter-accent,var(--V)) 12%,var(--card)),var(--card) 70%);border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden}
+.chapter-head:after{content:"";position:absolute;bottom:0;left:26px;width:80px;height:2px;background:color-mix(in srgb,var(--chapter-accent,var(--V)) 55%,transparent);border-radius:0 0 2px 2px}
+.chapter-num{position:relative;font:700 44px/1 Newsreader,Georgia,serif;color:var(--chapter-accent,var(--V));letter-spacing:-.04em;font-feature-settings:"lnum";width:80px;height:80px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1.5px dashed color-mix(in srgb,var(--chapter-accent,var(--V)) 45%,transparent);background:color-mix(in srgb,var(--chapter-accent,var(--V)) 4%,transparent)}
+.chapter-num::after{content:"";position:absolute;left:calc(100% + 5px);top:50%;transform:translateY(-50%);width:10px;height:1px;background-image:linear-gradient(to right,color-mix(in srgb,var(--chapter-accent,var(--V)) 65%,transparent) 50%,transparent 50%);background-size:4px 1px;opacity:.8}
+.chapter-meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.chapter-title{font:700 23px/1.15 Newsreader,Georgia,serif;margin:0;letter-spacing:-.01em}
+.chapter-stats{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+
+.chapter-intro{font:400 15.5px/1.6 Newsreader,Georgia,serif;color:var(--mute);max-width:62ch;margin:-4px 0 18px;padding:0 4px;letter-spacing:-.003em;font-style:italic}
+
+.events{display:flex;flex-direction:column;gap:8px}
+.event.anchor{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--lane-color,var(--V)) 6%,var(--card)) 0%,var(--card) 65%);
+  border:1px solid var(--line);border-left:5px solid var(--lane-color,var(--V));border-radius:12px;padding:22px 24px 22px 44px;margin-bottom:8px;position:relative;transition:box-shadow .2s;overflow:hidden;
+}
+.event.anchor::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:44px;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 22px 24px, var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px 24px, color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px),
+    radial-gradient(circle at 22px 50%, var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px 50%, color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px),
+    radial-gradient(circle at 22px calc(100% - 24px), var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px calc(100% - 24px), color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px);
+  background-size:100% 100%;background-repeat:no-repeat;
+}
+.event.anchor:hover{box-shadow:0 6px 24px rgba(94,70,30,.09)}
+.anchor-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.anchor-head-left{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.anchor-date{font-size:12.5px;color:var(--lane-color,var(--V));text-transform:uppercase;letter-spacing:.06em;font-weight:600;font-family:"IBM Plex Mono",monospace}
+.anchor-title{font:700 22px/1.25 Newsreader,Georgia,serif;margin:0 0 10px;letter-spacing:-.005em}
+.anchor-desc{font-size:15px;line-height:1.6;margin:0 0 12px;color:var(--ink)}
+.anchor-meta{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font:400 11px/1.5 "IBM Plex Mono",monospace;color:var(--mute);margin-top:12px;padding-top:12px;border-top:1px dashed color-mix(in srgb,var(--lane-color,var(--V)) 30%,var(--line))}
+.anchor-meta .label{font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:9.5px;color:var(--mute);margin-right:2px}
+.anchor-meta .sources a{color:inherit;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,var(--ink) 30%,transparent)}
+.anchor-meta .sources a:hover{color:var(--ink);text-decoration-color:var(--ink)}
+.char-dots{display:inline-flex;gap:3px;align-items:center}
+.char-dots i{width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block;opacity:.6;filter:saturate(.85)}
+.lane-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;padding:2px 8px;border-radius:4px;background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--c);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.lane-tag:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--c)}
+
+.st{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.st:before{content:"";width:5px;height:5px;border-radius:50%}
+.st.sd{background:color-mix(in srgb,var(--sd) 14%,transparent);color:var(--sd)}.st.sd:before{background:var(--sd)}
+.st.sa{background:color-mix(in srgb,var(--sa) 14%,transparent);color:var(--sa)}.st.sa:before{background:var(--sa)}
+.st.sc{background:color-mix(in srgb,var(--sc) 14%,transparent);color:var(--sc)}.st.sc:before{background:var(--sc)}
+.st.sv{background:color-mix(in srgb,var(--sv) 14%,transparent);color:var(--sv)}.st.sv:before{background:var(--sv)}
+
+details.event.compact{
+  background:var(--card);
+  border:1px solid var(--line);border-radius:8px;overflow:hidden;transition:border-color .15s,box-shadow .15s;position:relative;
+}
+details.event.compact::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:44px;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 22px 16px, var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px 16px, color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px),
+    radial-gradient(circle at 22px 50%, var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px 50%, color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px),
+    radial-gradient(circle at 22px calc(100% - 16px), var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px calc(100% - 16px), color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px);
+  background-size:100% 100%;background-repeat:no-repeat;
+}
+details.event.compact:hover{border-color:var(--mute)}
+details.event.compact[open]{border-color:var(--lane-color,var(--V));box-shadow:0 3px 16px rgba(94,70,30,.07)}
+details.event.compact summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:140px 1fr auto auto;gap:14px;align-items:center;padding:16px 14px 16px 44px;min-height:64px;user-select:none}
+details.event.compact summary::-webkit-details-marker{display:none}
+.compact-date{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"IBM Plex Mono",monospace}
+.compact-title{font-size:14px;font-weight:500;color:var(--ink);line-height:1.35;min-width:0}
+.compact-chev{color:var(--mute);font-size:10px;transition:transform .2s;flex-shrink:0}
+details.event.compact[open] .compact-chev{transform:rotate(90deg);color:var(--lane-color,var(--V))}
+details.event.compact .compact-body{padding:14px 14px 14px 44px;border-top:1px solid var(--line);background:var(--soft);font-size:14px;line-height:1.55}
+details.event.compact .compact-body p{margin:0 0 10px}
+.compact-meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:11.5px;color:var(--mute);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+
+.anchor-mirror{margin:0 0 14px;padding:14px 16px;background:linear-gradient(135deg,color-mix(in srgb,var(--lane-color,var(--V)) 8%,var(--card)) 0%,var(--card) 70%);border-left:3px solid var(--lane-color,var(--V));border-radius:0 8px 8px 0;font:400 15px/1.55 Newsreader,Georgia,serif;font-style:italic;color:var(--ink)}
+.anchor-mirror strong{font-style:normal;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.1em;font-size:10px;display:block;margin-bottom:6px;font-family:"IBM Plex Sans",sans-serif}
+.compact-mirror{margin:0 0 10px;padding:10px 12px;background:linear-gradient(135deg,color-mix(in srgb,var(--lane-color,var(--V)) 8%,var(--card)) 0%,var(--card) 70%);border-left:2px solid var(--lane-color,var(--V));border-radius:0 6px 6px 0;font:400 13.5px/1.5 Newsreader,Georgia,serif;font-style:italic;color:var(--ink)}
+.compact-mirror strong{font-style:normal;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.1em;font-size:9px;display:block;margin-bottom:4px;font-family:"IBM Plex Sans",sans-serif}
+
+.lente{
+  margin:0 0 22px;
+  padding:24px 24px 20px 44px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-top:4px solid var(--lente-color,var(--V));
+  border-radius:0 0 12px 12px;
+  position:relative;
+  box-shadow:0 2px 12px color-mix(in srgb,var(--lente-color,var(--V)) 8%,transparent)
+}
+.lente::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:44px;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 22px 24px, var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px 24px, color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px),
+    radial-gradient(circle at 22px 50%, var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px 50%, color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px),
+    radial-gradient(circle at 22px calc(100% - 24px), var(--bg) 4px, transparent 4.5px),
+    radial-gradient(circle at 22px calc(100% - 24px), color-mix(in srgb,var(--mute) 45%,transparent) 5px, transparent 5.5px);
+  background-size:100% 100%;background-repeat:no-repeat;
+}
+.lente-label{position:absolute;top:-11px;left:20px;background:var(--lente-color,var(--V));color:#fff;font:700 9.5px/1 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:5px 11px;border-radius:999px}
+.lente-abertura{font:700 18px/1.3 Newsreader,Georgia,serif;color:var(--ink);margin:0 0 12px;letter-spacing:-.005em;max-width:56ch}
+.lente-corpo{font:400 15px/1.6 Newsreader,Georgia,serif;color:var(--ink);margin:0 0 16px;max-width:62ch}
+.lente-pergunta{font:italic 600 16px/1.5 Newsreader,Georgia,serif;color:var(--lente-color,var(--V));margin:0;padding-top:14px;border-top:1px dashed color-mix(in srgb,var(--lente-color,var(--V)) 35%,var(--line));max-width:62ch}
+
+.lente-coda{margin:56px 0 0;padding:30px 28px 26px;background:linear-gradient(135deg,color-mix(in srgb,var(--V) 5%,var(--card)) 0%,var(--card) 70%);border:1px solid var(--line);border-left:5px solid var(--V);border-radius:0 14px 14px 0;position:relative}
+.lente-coda-kicker{font:700 10.5px/1 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--V);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.lente-coda-kicker:before{content:"";width:22px;height:1px;background:var(--V)}
+.lente-coda-title{font:700 22px/1.2 Newsreader,Georgia,serif;color:var(--ink);margin:0 0 14px;letter-spacing:-.01em}
+.lente-coda-text{font:400 15.5px/1.6 Newsreader,Georgia,serif;color:var(--ink);margin:0;max-width:62ch}
+
+.doc-stamp{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;padding:0;margin:0 0 18px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:4px;font:400 11px/1.4 "IBM Plex Mono","IBM Plex Sans",monospace;color:var(--mute);letter-spacing:.02em;overflow:hidden}
+.doc-stamp-label{font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:10px;padding:8px 12px;background:var(--ink);color:var(--bg);display:flex;align-items:center}
+.doc-stamp-item{padding:8px 12px;display:inline-flex;align-items:center;gap:4px;border-left:1px solid var(--line)}
+.doc-stamp-item b{color:var(--ink);font-weight:700}
+.doc-stamp-sep{display:none}
+@media (max-width:520px){
+  .doc-stamp{font-size:10px}
+  .doc-stamp-label{font-size:9px;padding:6px 10px}
+  .doc-stamp-item{padding:6px 10px}
+}
+.doc-id{font:500 10px/1 "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--mute);padding:3px 7px;border:1px solid var(--line);border-radius:4px;background:var(--soft);text-transform:uppercase;white-space:nowrap}
+@media (max-width:520px){
+  .doc-stamp{padding:8px 10px;font-size:10px}
+  .doc-stamp-label{font-size:9px;padding:2px 6px}
+  .doc-id{font-size:9px;padding:2px 5px}
+  details.event.compact summary{grid-template-columns:1fr auto;grid-template-areas:"date status" "title title";gap:6px 10px;padding:12px 14px 12px 36px;}
+  details.event.compact .compact-body{padding:14px 14px 14px 36px;}
+  .compact-date{grid-area:date;white-space:normal;font-size:10px;}
+  details.event.compact summary .st{grid-area:status;justify-self:end;}
+  .compact-title{grid-area:title;font-size:14.5px;font-weight:600;line-height:1.4;padding-top:2px;}
+  .compact-chev{display:none;}
+}
+
+.e{margin:30px 0;color:var(--mute);text-align:center;padding:36px 20px;border:1px dashed var(--line);border-radius:12px;background:var(--soft);font-size:15px}
+
+.propostas{margin:56px 0 0;padding:32px 0;border-top:2px double var(--line)}
+.propostas-kicker{font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--lane-trajetoria);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.propostas-kicker:before{content:"";width:26px;height:1px;background:var(--lane-trajetoria)}
+.propostas-title{font:700 26px/1.15 Newsreader,Georgia,serif;margin:0 0 12px;letter-spacing:-.01em}
+.propostas-dek{font:400 15.5px/1.55 Newsreader,Georgia,serif;color:var(--mute);margin:0 0 24px;max-width:62ch;font-style:italic}
+.proposta-bloco{margin-bottom:28px}
+.proposta-tema{font:700 18px/1.2 Newsreader,Georgia,serif;margin:0 0 12px;color:var(--lane-trajetoria);padding-bottom:8px;border-bottom:1px solid var(--line)}
+.proposta-item{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--lane-trajetoria);border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:8px}
+.proposta-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.proposta-titulo{font:700 15px/1.3 Newsreader,Georgia,serif;margin:0;color:var(--ink);letter-spacing:-.003em}
+.proposta-desc{font-size:13.5px;line-height:1.55;margin:0 0 10px;color:var(--ink)}
+.proposta-fontes{font-size:11.5px;color:var(--mute);padding-top:10px;border-top:1px dashed var(--line);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.proposta-fontes .label{font-weight:500;text-transform:uppercase;letter-spacing:.05em;font-size:10.5px}
+.proposta-fontes a{color:inherit;text-underline-offset:2px}
+.proposta-fontes a:hover{color:var(--ink)}
+
+footer{margin-top:40px;font-size:14.5px;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--V);border-radius:0 12px 12px 0;padding:22px 24px;line-height:1.65}
+footer:before{content:"NOTA EDITORIAL";display:block;font-size:11px;font-weight:700;letter-spacing:.15em;color:var(--V);margin-bottom:12px}
+
+.float{position:fixed;right:18px;width:46px;height:46px;border-radius:50%;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 12px rgba(94,70,30,.12);font-size:18px;cursor:pointer;z-index:50;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s,opacity .2s;color:var(--ink);font-family:inherit}
+.float:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(94,70,30,.16)}
+.float:focus-visible{outline:2px solid var(--F);outline-offset:2px}
+.theme{bottom:20px}
+.top{bottom:78px;opacity:0;pointer-events:none;font-size:20px;font-weight:500}
+.top.show{opacity:1;pointer-events:auto}
+
+.teia-overlay{position:fixed;inset:0;background:rgba(20,17,13,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.teia-overlay.open{display:flex;animation:teia-fade .2s ease}
+@keyframes teia-fade{from{opacity:0}to{opacity:1}}
+.teia-shell{background:var(--card);border:1px solid var(--line);border-radius:16px;width:100%;max-width:1120px;height:88vh;max-height:780px;display:grid;grid-template-columns:1fr 340px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:teia-up .25s ease}
+@keyframes teia-up{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.teia-main{position:relative;background:var(--soft);overflow:hidden}
+.teia-main::before,.teia-main::after{content:"";position:absolute;top:0;bottom:0;width:12px;pointer-events:none;z-index:5;opacity:.8;
+  background-image:
+    linear-gradient(to right,color-mix(in srgb,var(--ink) 22%,transparent) 0,color-mix(in srgb,var(--ink) 22%,transparent) 1px,transparent 1px),
+    repeating-linear-gradient(to bottom,color-mix(in srgb,var(--ink) 32%,transparent) 0 1px,transparent 1px 140px),
+    repeating-linear-gradient(to bottom,color-mix(in srgb,var(--ink) 15%,transparent) 0 1px,transparent 1px 28px);
+  background-size:100% 100%,12px 100%,6px 100%;
+  background-position:left top,left top,left top;
+  background-repeat:no-repeat,repeat-y,repeat-y;
+}
+.teia-main::before{left:0}
+.teia-main::after{right:0;transform:scaleX(-1)}
+.teia-canvas{width:100%;height:100%;cursor:grab;position:absolute;inset:0;background-color:var(--soft);background-image:linear-gradient(to right,color-mix(in srgb,var(--ink) 5%,transparent) 1px,transparent 1px),linear-gradient(to bottom,color-mix(in srgb,var(--ink) 5%,transparent) 1px,transparent 1px);background-size:28px 28px}
+.teia-canvas:active{cursor:grabbing}
+.teia-topbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;z-index:10;background:linear-gradient(180deg,color-mix(in srgb,var(--card) 90%,transparent) 0%,transparent 100%);pointer-events:none;flex-wrap:wrap}
+.teia-topbar > *{pointer-events:auto}
+.teia-title{font-size:12px;font-weight:600;color:var(--ink);letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+.teia-title small{display:block;font-weight:400;color:var(--mute);font-size:10.5px;letter-spacing:.04em;margin-top:1px}
+.teia-close{position:absolute;top:12px;right:12px;z-index:20;width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.1);transition:transform .15s}
+.teia-close:hover{transform:rotate(90deg)}
+.teia-legend{position:absolute;bottom:12px;left:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:10.5px;color:var(--mute);background:color-mix(in srgb,var(--card) 92%,transparent);border:1px solid var(--line);border-radius:10px;padding:8px 12px;z-index:10;line-height:1.4}
+.teia-legend span{display:inline-flex;align-items:center;gap:5px}
+.teia-legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.teia-legend .line{width:18px;height:2px;background:var(--mute);border-radius:1px;display:inline-block}
+.teia-legend .line.dash{background:repeating-linear-gradient(90deg,var(--mute) 0 3px,transparent 3px 5px)}
+.teia-sidebar{border-left:1px solid var(--line);background:var(--card);display:flex;flex-direction:column;overflow:hidden}
+.teia-sidebar-empty{padding:24px 20px;color:var(--mute);font-size:12.5px;line-height:1.55;display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
+.teia-sidebar-empty h4{font:700 15px Newsreader,Georgia,serif;margin:0 0 8px;color:var(--ink)}
+.teia-sidebar-empty p{margin:0 0 8px}
+.teia-sidebar-empty .hint{margin-top:16px;padding:10px 12px;background:var(--soft);border-radius:8px;font-size:11.5px;line-height:1.5;text-align:left}
+.teia-sidebar-empty .hint b{color:var(--ink)}
+.teia-info{padding:20px;overflow-y:auto;display:none;height:100%}
+.teia-info.active{display:block}
+.teia-back-btn{display:none;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;margin-bottom:16px;align-items:center;justify-content:center;gap:6px;font-weight:600;width:100%;transition:all .15s}
+.teia-back-btn:hover{background:var(--card);border-color:var(--mute)}
+.teia-info-header-edge{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line);text-align:center}
+.teia-info-header-edge h3{font:700 18px/1.2 Newsreader,Georgia,serif;margin:0 0 6px;color:var(--ink);letter-spacing:-.01em;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.teia-info-header-edge .badge{margin-top:8px}
+.edge-visual{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px;padding:16px;background:var(--soft);border-radius:12px;border:1px solid var(--line)}
+.edge-node-mini{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s;width:80px}
+.edge-node-mini:hover{transform:translateY(-2px)}
+.edge-node-mini .av{width:44px;height:44px;border-radius:50%;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.edge-node-mini .av img{width:100%;height:100%;object-fit:cover}
+.edge-node-mini b{font-size:11px;font-weight:600;color:var(--ink);text-align:center;line-height:1.25}
+.edge-arrow{font-size:20px;color:var(--mute);flex-shrink:0;opacity:0.6;font-weight:300}
+.edge-why{font-size:13px;color:var(--ink);line-height:1.6;padding:14px 16px;background:color-mix(in srgb,var(--c) 5%,var(--card));border-radius:10px;border-left:3px solid var(--c);margin-bottom:16px}
+.edge-why strong{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin-bottom:6px;font-weight:600}
+.edge-actions{display:flex;flex-direction:column;gap:6px}
+.btn-edge{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:9px 12px 9px 28px;font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:8px;position:relative;overflow:hidden}
+.btn-edge::before{content:"";position:absolute;left:0;top:0;bottom:0;width:28px;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 14px 50%, var(--soft) 3px, transparent 3.5px),
+    radial-gradient(circle at 14px 50%, color-mix(in srgb,var(--mute) 45%,transparent) 4px, transparent 4.5px);
+  background-size:100% 100%;background-repeat:no-repeat;
+}
+.btn-edge:hover{background:var(--card);border-color:var(--c);transform:translateX(2px)}
+.btn-edge .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.teia-info-header{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.teia-info-header .avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.teia-info-header .avatar img{width:100%;height:100%;display:block;object-fit:cover}
+.teia-info-header h3{font:700 20px/1.2 Newsreader,Georgia,serif;margin:0 0 6px;color:var(--ink);letter-spacing:-.01em}
+.teia-info-header .tag{display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:4px;background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--c)}
+.teia-info-header p{font-size:12.5px;color:var(--mute);margin:8px 0 0;line-height:1.5}
+.teia-info h4{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--mute);margin:0 0 10px}
+.teia-conn-list{list-style:none;padding:0;margin:0}
+.teia-conn{position:relative;display:flex;align-items:flex-start;gap:8px;padding:10px 10px 10px 32px;margin-bottom:6px;border-radius:8px;cursor:pointer;transition:background .15s;border:1px solid var(--line);background:var(--soft);overflow:hidden}
+.teia-conn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:32px;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 16px 16px, var(--card) 3.5px, transparent 4px),
+    radial-gradient(circle at 16px 16px, color-mix(in srgb,var(--mute) 45%,transparent) 4.5px, transparent 5px),
+    radial-gradient(circle at 16px calc(100% - 16px), var(--card) 3.5px, transparent 4px),
+    radial-gradient(circle at 16px calc(100% - 16px), color-mix(in srgb,var(--mute) 45%,transparent) 4.5px, transparent 5px);
+  background-size:100% 100%;background-repeat:no-repeat;
+}
+.teia-conn:hover{background:color-mix(in srgb,var(--c) 6%,var(--card));border-color:var(--c)}
+.teia-conn-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.teia-conn-body{min-width:0;flex:1}
+.teia-conn-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.3}
+.teia-conn-rel{font-size:11.5px;color:var(--mute);margin-top:2px;line-height:1.4;font-weight:500}
+.teia-conn-why{font-size:11.5px;color:var(--ink);opacity:.8;margin-top:4px;line-height:1.45;font-style:italic}
+.teia-conn-badge{font-size:9px;padding:2px 6px;border-radius:4px;background:color-mix(in srgb,var(--sd) 15%,transparent);color:var(--sd);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-left:auto;flex-shrink:0;margin-top:1px}
+.teia-conn-badge.alleged{background:color-mix(in srgb,var(--sa) 15%,transparent);color:var(--sa)}
+.vis-tooltip{background:var(--card) !important;border:1px solid var(--line) !important;border-radius:8px !important;padding:8px 12px !important;font-family:"IBM Plex Sans",sans-serif !important;font-size:12px !important;color:var(--ink) !important;box-shadow:0 4px 16px rgba(0,0,0,.15) !important;max-width:240px;line-height:1.45}
+.vis-tooltip b{color:var(--ink)}
+
+@media (max-width:820px){
+  .teia-shell{display:flex;flex-direction:column;height:100dvh;max-height:none;border-radius:0}
+  .teia-main{height:100%;flex:1}
+  .teia-sidebar{display:none;height:55%;flex:none;border-left:none;border-top:1px solid var(--line);box-shadow:0 -10px 30px rgba(0,0,0,.3);z-index:20;background:var(--card)}
+  .teia-shell.has-selection .teia-main{height:45%}
+  .teia-shell.has-selection .teia-sidebar{display:flex;flex-direction:column}
+  .teia-sidebar-empty{display:none}
+  .teia-info{padding:14px;padding-bottom:80px}
+  .teia-info-header .avatar{width:44px;height:44px}
+  .teia-info-header h3{font-size:17px}
+  .teia-legend{display:none}
+  .teia-title{display:none}
+  .teia-back-btn{display:flex;position:sticky;top:0;z-index:10;background:var(--soft);border-color:var(--mute)}
+  .teia-close{top:30px !important;right:16px !important;width:40px !important;height:40px !important}
+}
+@media (max-width:520px){
+  .teia-overlay{padding:0}
+  .teia-shell{border-radius:0;height:100vh;max-height:none}
+}
+
+.skip-link{position:absolute;left:-9999px;top:0;z-index:999;background:var(--ink);color:var(--bg);padding:10px 16px;text-decoration:none;border-radius:0 0 8px 0}
+.skip-link:focus{left:0}
+
+/* ==================== VIEW SWITCHING ==================== */
+.view{display:none}
+.view.active{display:block}
+
+/* Masthead do resumo (menor que o do dossiê) */
+.masthead-resumo .masthead-inner{padding:14px 16px 20px}
+@media (min-width: 600px){
+  .masthead-resumo .masthead-inner{padding:14px 24px 20px}
+}
+.masthead-resumo h1.masthead-title{font-size:clamp(28px,5vw,36px);margin-bottom:10px}
+.masthead-resumo .masthead-dek{font-size:15px;margin-bottom:0}
+
+/* Numeração e fio entre as réguas (só no resumo) */
+#view-resumo{counter-reset:lente-num}
+#view-resumo .lente{counter-increment:lente-num}
+#view-resumo .lente::after{
+  content:counter(lente-num,decimal-leading-zero);
+  position:absolute;top:12px;right:18px;
+  font:700 26px/1 "IBM Plex Mono","Courier New",monospace;
+  color:var(--lente-color,var(--V));
+  opacity:.35;letter-spacing:-.02em;pointer-events:none;
+}
+/* Fio conector removido para não sobrepor os furos */
+@media (max-width:520px){
+  #view-resumo .lente::after{top:10px;right:14px;font-size:22px}
+  /* Fio conector mobile removido */
+}
+
+/* Desfecho (bloco da eleição/saída) — versão régua */
+.desfecho{margin:32px 0 24px;padding:22px 24px 22px 22px;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--V);border-radius:0 0 12px 12px;box-shadow:0 2px 12px color-mix(in srgb,var(--V) 8%,transparent)}
+.desfecho-label{display:inline-block;background:var(--V);color:#fff;font:700 9.5px/1 "IBM Plex Sans",sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:5px 11px;border-radius:999px;margin-bottom:18px}
+.desfecho-list{list-style:none;padding:0;margin:0;position:relative}
+.desfecho-list::before{content:"";position:absolute;left:10px;top:0.775em;bottom:0.775em;width:1px;background-image:linear-gradient(to bottom,color-mix(in srgb,var(--V) 55%,transparent) 50%,transparent 50%);background-size:1px 5px;opacity:.85;pointer-events:none}
+.desfecho-list li{position:relative;display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:baseline;font-size:15px;line-height:1.55;color:var(--ink);padding:0 0 14px 26px}
+.desfecho-list li:last-child{padding-bottom:0}
+.desfecho-list li::before{content:"";position:absolute;left:6.5px;top:calc((1.55em - 8px) / 2);width:8px;height:8px;border-radius:50%;background:var(--card);border:1.5px solid var(--V);box-sizing:border-box;z-index:1}
+.desfecho-list li::after{content:"";position:absolute;left:16px;top:calc((1.55em - 1px) / 2);width:9px;height:1px;background:var(--V);opacity:.45;pointer-events:none}
+.desfecho-list b{font:600 12px/1.4 "IBM Plex Mono",monospace;color:var(--V);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.desfecho-list em{font-style:italic}
+
+/* Gancho */
+.gancho{margin:28px 0 20px;padding:18px 20px;background:color-mix(in srgb,var(--ink) 4%,var(--card));border-left:3px solid var(--V);border-radius:0 8px 8px 0;font:400 15px/1.6 Newsreader,Georgia,serif;color:var(--ink);font-style:italic}
+
+/* Contadores qualitativos das lentes */
+.lente-mais{font:italic 400 13.5px/1.5 Newsreader,Georgia,serif;color:var(--mute);margin:-8px 0 14px;padding:2px 0 10px;text-align:right}
+.lente-mais b{font-style:normal;font-weight:700;color:var(--ink);font-size:13.5px}
+
+/* CTA do dossiê */
+.cta-dossie{margin:32px 0 24px;padding:28px 24px;background:linear-gradient(135deg,color-mix(in srgb,var(--V) 6%,var(--card)) 0%,var(--card) 70%);border:1px solid var(--line);border-left:5px solid var(--V);border-radius:0 14px 14px 0;text-align:center}
+.cta-dossie h3{font:700 20px/1.2 Newsreader,Georgia,serif;margin:0 0 10px;color:var(--ink);letter-spacing:-.01em}
+.cta-dossie p{font-size:14px;color:var(--mute);margin:0 0 20px;line-height:1.55;max-width:48ch;margin-left:auto;margin-right:auto}
+.cta-dossie-botoes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn-dossie{background:var(--V);color:#fff;border:none;border-radius:999px;padding:14px 24px;font:600 14px/1 "IBM Plex Sans",sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .15s}
+.btn-dossie:hover{transform:translateY(-2px);box-shadow:0 8px 20px color-mix(in srgb,var(--V) 35%,transparent)}
+.btn-teia-resumo{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:14px 24px;font:500 14px/1 "IBM Plex Sans",sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .15s}
+.btn-teia-resumo:hover{border-color:var(--ink);transform:translateY(-2px)}
+
+/* Botão de voltar ao resumo (no dossiê completo) */
+.btn-voltar-resumo{
+  position:fixed;
+  top:80px;
+  right:18px;
+  z-index:45;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:var(--ink);
+  color:var(--bg);
+  border:1px solid var(--ink);
+  border-radius:999px;
+  padding:12px 22px;
+  font:600 14px/1 "IBM Plex Sans",sans-serif;
+  cursor:pointer;
+  transition:all .15s;
+  box-shadow:0 4px 14px rgba(0,0,0,.18);
+}
+.btn-voltar-resumo:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(0,0,0,.25);
+}
+@media (max-width:520px){
+  .btn-voltar-resumo{
+    top:70px;
+    right:12px;
+    padding:10px 16px;
+    font-size:13px;
+  }
+}
+
+@media (max-width:520px){
+  .desfecho-list li{grid-template-columns:1fr;gap:2px;padding:0 0 16px 24px}
+  .desfecho-list li:last-child{padding-bottom:0}
+  .desfecho-list b{font-size:11px}
+  .desfecho-list li::before{left:5.5px}
+  .desfecho-list li::after{left:15px;width:8px}
+  .cta-dossie-botoes{flex-direction:column;align-items:stretch}
+  .btn-dossie,.btn-teia-resumo{justify-content:center}
+}
+
+</style>
+</head>
+<body>
+
+<a href="#timeline" class="skip-link">Pular para a linha do tempo</a>
+
+<div id="view-resumo" class="view active">
+
+  <header class="masthead masthead-resumo">
+    <div class="w">
+      <div class="masthead-inner">
+        <div class="brand-bar">
+          <span class="brand-mark">Caderno Especial</span>
+          <span>Versão curta · 2026</span>
+        </div>
+        <div class="masthead-kicker">Depois da eleição</div>
+        <h1 class="masthead-title">A teia — o essencial</h1>
+        <p class="masthead-dek">O dossiê tem 73 eventos. Estes são os essenciais — e o caminho para os outros.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="w">
+
+    <section class="lead">
+      <p class="lead-text">Se você desconfia da imprensa, você tem razões. Não vou te pedir confiança — vou te dar três réguas e os fatos para aplicá-las. Depois da eleição, sobra muita versão e pouca prova. Aqui, cada linha tem data e fonte. Você lê. Confere. E se em algum ponto você hesitar, não pare na dúvida. Vá atrás dela.</p>
+    </section>
+
+    <aside class="lente" role="note" aria-label="Sua régua · meritocracia" style="--lente-color:var(--lente-meritocracia)">
+      <span class="lente-label">Sua régua · meritocracia</span>
+      <p class="lente-abertura">Você acredita que o que a pessoa tem, ela conquistou.</p>
+      <p class="lente-corpo">Aos 19 anos, Flávio assumiu um cargo de 40 horas em Brasília — enquanto cursava faculdade presencial no Rio, a 1.000 km de distância. O patrimônio declarado ao TSE passou de R$ 1,7 milhão (2018) para R$ 8,2 milhões (2026); a mansão no Lago Sul foi quitada em 3 anos.</p>
+      <p class="lente-mais">Há <b>mais 5 eventos</b> sobre meritocracia no dossiê completo.</p>
+      <p class="lente-pergunta">Se fosse o filho de um político que você não apoia, você chamaria isso de quê?</p>
+    </aside>
+
+    <aside class="lente" role="note" aria-label="Sua régua · combate à corrupção" style="--lente-color:var(--lente-corrupcao)">
+      <span class="lente-label">Sua régua · combate à corrupção</span>
+      <p class="lente-abertura">Você acredita que corrupção não tem lado.</p>
+      <p class="lente-corpo">Flávio negociou US$ 24 milhões com Daniel Vorcaro para financiar o filme “Dark Horse”, sobre o pai. Vorcaro seria preso por fraude em novembro de 2025; US$ 12,3 milhões foram efetivamente repassados. Relatório da PF aponta Flávio como “usuário master” da conta da Alcazar Holdings, empresa do advogado Willer Tomaz. O deputado Nikolas Ferreira usou um jato ligado a Vorcaro na campanha de 2022 e, em 2025, pediu ajuda ao banqueiro com um ativo de minério.</p>
+      <p class="lente-mais">Há <b>mais 18 eventos</b> sobre corrupção no dossiê completo.</p>
+      <p class="lente-pergunta">Se fosse um senador do partido que você não apoia, você chamaria isso de quê?</p>
+    </aside>
+
+    <aside class="lente" role="note" aria-label="Sua régua · família" style="--lente-color:var(--lente-familia)">
+      <span class="lente-label">Sua régua · família</span>
+      <p class="lente-abertura">Você acredita que a família é a base de tudo.</p>
+      <p class="lente-corpo">Em 2026, Flávio apoiou Márcio Canela para o Senado no Rio, com Rogéria Bolsonaro — mãe de Flávio — como primeira suplente. Canela foi preso duas vezes pela PF, chamado de “patrono político de organização criminosa armada”; Flávio retirou a mãe da chapa. O irmão, Eduardo Bolsonaro, foi condenado pelo STF a 4 anos e 2 meses por coação. O cunhado, Fabiano Zettel, foi preso em março de 2026, apontado pela PF como operador financeiro do grupo de Vorcaro.</p>
+      <p class="lente-mais">Há <b>mais 5 eventos</b> sobre família no dossiê completo.</p>
+      <p class="lente-pergunta">Se fosse a família de um político que você não apoia, você chamaria isso de quê?</p>
+    </aside>
+
+    <section class="desfecho" aria-label="E no fim">
+      <span class="desfecho-label">E no fim</span>
+      <ul class="desfecho-list">
+        <li><b>4 out</b><span>1º turno: Flávio lidera, 47,03% contra 45,16% de Lula.</span></li>
+        <li><b>25 out</b><span>2º turno: Lula vence com 51,79%. Margem: 3,58 pontos.</span></li>
+        <li><b>Naquela noite</b><span>Flávio: <em>“É impossível reconhecer o resultado das eleições.”</em></span></li>
+        <li><b>27 out</b><span>Cruza a fronteira com a Argentina e embarca para Miami, com a mulher e as duas filhas.</span></li>
+        <li><b>30 out</b><span>Em live: <em>“Não fugi do Brasil, eu saí pelo Brasil.”</em></span></li>
+      </ul>
+    </section>
+
+    <p class="gancho">Como esses nomes se conectam — Vorcaro, Willer, Zettel, Canela, o ministro Kássio, o Careca do INSS — está no dossiê completo. São 73 eventos, com data, fonte e status. Este resumo é uma amostra.</p>
+
+    <aside class="lente-coda" role="note" aria-label="As três réguas">
+      <div class="lente-coda-kicker">Três réguas</div>
+      <p class="lente-coda-title">Meritocracia. Combate à corrupção. Família.</p>
+      <p class="lente-coda-text">A eleição já passou. O que você leu aqui não muda o voto que você deu — mas pode mudar o que você entende sobre o que aconteceu. Não pedi que você respondesse a nenhuma das três perguntas. Só pedi que as aplicasse. E se em algum ponto você hesitar, não pare na dúvida. Vá atrás dela.</p>
+    </aside>
+
+    <section class="cta-dossie">
+      <h3>Quer checar cada fonte?</h3>
+      <p>O dossiê completo tem 73 eventos, cada um com data, status e as matérias originais. Leva mais tempo. Mas cada linha é verificável.</p>
+      <div class="cta-dossie-botoes">
+        <button class="btn-dossie" onclick="showView('completo')">Ler o dossiê completo (73 eventos) →</button>
+        <button class="btn-teia-resumo" onclick="openTeia()">Ver a teia →</button>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+<div id="view-completo" class="view">
+
+<div class="progress" id="progress"></div>
+<a href="#" class="btn-voltar-resumo" onclick="showView('resumo');return false;">← Resumo</a>
+<div class="chapter-indicator" id="chapter-indicator">Origens</div>
+
+<header class="masthead">
+  <div class="w">
+    <div class="masthead-inner">
+      <div class="brand-bar">
+        <span class="brand-mark">Caderno Especial</span>
+        <span>Linha do tempo · Edição contínua · 2026</span>
+      </div>
+      <div class="masthead-kicker">Depois da eleição</div>
+      <h1 class="masthead-title">A teia: o que está documentado, o que é alegação e o que ninguém provou</h1>
+      <p class="masthead-dek">Cada linha aqui tem data, fonte e status. O que é prova, está marcado como prova. O que é alegação, está marcado como alegação. Você lê. Confere. O julgamento é seu.</p>
+      <div class="masthead-meta">
+        <span><b id="st-ev">—</b> eventos</span>
+        <span class="dot">·</span>
+        <span><b id="st-an">—</b> momentos-chave</span>
+        <span class="dot">·</span>
+        <span><b id="st-ch">—</b> personagens</span>
+        <span class="dot">·</span>
+        <span>1957–2026</span>
+      </div>
+      <div class="front-chips">
+        <span class="front-chip master"><b id="fc-master">—</b> Master</span>
+        <span class="front-chip lagoinha"><b id="fc-lagoinha">—</b> Lagoinha</span>
+        <span class="front-chip raras"><b id="fc-raras">—</b> Terras Raras</span>
+        <span class="front-chip trajetoria"><b id="fc-trajetoria">—</b> Trajetória</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="w">
+
+<section class="lead">
+  <p class="lead-text">Se você desconfia da imprensa, você tem razões. Não estou aqui para te pedir confiança — e sim para te dar as ferramentas para não depender dela. Passada a eleição, sobra muita versão e pouca prova. Este documento separa as duas coisas: o que tem documento, data e fonte de um lado; o que é alegação, contestação ou silêncio do outro.</p>
+
+  <p class="lead-sub">Mas antes de qualquer nome, data ou documento, três critérios. Você os aplica. Você decide o que fica.</p>
+
+  <ol class="lead-filters">
+    <li class="lead-filter">
+      <span class="lead-filter-num">01</span>
+      <div class="lead-filter-body">
+        <b class="lead-filter-title">O documento existe fora de mim?</b>
+        <p class="lead-filter-desc">Uma decisão do STF, um contrato registrado, um áudio autenticado. A pergunta não é "posso confiar em quem mostra?" — é "posso verificar o documento por outro caminho?".</p>
+      </div>
+    </li>
+    <li class="lead-filter">
+      <span class="lead-filter-num">02</span>
+      <div class="lead-filter-body">
+        <b class="lead-filter-title">O acusado tem voz?</b>
+        <p class="lead-filter-desc">Em cada linha, a versão do citado está registrada. Quando não há, isso é dito. Quem não foi condenado está marcado como quem não foi condenado.</p>
+      </div>
+    </li>
+    <li class="lead-filter">
+      <span class="lead-filter-num">03</span>
+      <div class="lead-filter-body">
+        <b class="lead-filter-title">E se fosse com o outro lado?</b>
+        <p class="lead-filter-desc">Se o fato, contado sobre um político que você não apoia, ainda te incomodasse, então o problema não é ideologia — é fato. Essa é a pergunta mais difícil. E a única que não tem resposta errada.</p>
+      </div>
+    </li>
+  </ol>
+
+  <p class="lead-closing">O que segue é uma linha do tempo. A eleição já passou. O que você lê aqui não muda o voto que você deu — mas pode mudar o que você entende sobre o que aconteceu. Leia como quem aplica os três critérios, não como quem espera uma confirmação. Se ao final você ainda achar que tudo não passa de perseguição, essa é uma conclusão legítima — mas que seja uma conclusão sua, não um reflexo. E se em algum ponto você hesitar, não pare na dúvida. Vá atrás dela.</p>
+</section>
+
+<div class="teia-cta">
+  <div class="teia-cta-left">
+    <div class="teia-cta-icon">🕸️</div>
+    <div>
+      <h3>A teia: quem se conecta com quem</h3>
+      <p>Sem opinião. Só linha, nome e documento.</p>
+    </div>
+  </div>
+  <button class="btn-cta" id="teia-btn">Abrir teia →</button>
+</div>
+
+<div class="info-grid">
+  <details class="info-panel" style="--pc:var(--V)">
+    <summary>Quem é quem</summary>
+    <div class="info-panel-body">
+      <div class="people-mini" id="people-mini"></div>
+    </div>
+  </details>
+  <details class="info-panel" style="--pc:var(--Z)">
+    <summary>Sobre as fontes</summary>
+    <div class="info-panel-body">
+      <div style="font-size:12.5px;color:var(--mute);margin:0 0 16px;line-height:1.55">
+        <p style="margin:0 0 10px">Sabemos que desconfiar da imprensa é comum — e muitas vezes saudável. Por isso, este documento não pede que você acredite em nós. Pede que você olhe as evidências.</p>
+        <p style="margin:0 0 10px">A regra aqui é simples e rígida: <b>fatos têm provas (documentos, áudios, registros oficiais); alegações têm donos (quem acusou); e o que não foi provado está marcado como não provado.</b> Além disso, todas as defesas e contestações dos citados foram incluídas no texto.</p>
+        <p style="margin:0 0 10px">Para não depender de uma única visão, cruzamos informações de fontes primárias (Ministério Público, PF, STF, TSE, Câmara) com veículos de diferentes orientações editoriais. Quando um veículo tem um viés político declarado, ele é classificado como tal abaixo. O objetivo não é convencer você a mudar de lado, mas garantir que você saiba exatamente do que está discordando. Não existe político de estimação. Existe o Brasil e as escolhas que fazemos para ele.</p>
+        <p style="margin:0;padding:10px 12px;background:var(--soft);border-left:3px solid var(--Z);border-radius:0 6px 6px 0;font-size:11.5px;line-height:1.5"><b style="color:var(--ink)">Nota sobre 2025–2026.</b> Os eventos dos dois últimos capítulos são <b>cenário em acompanhamento</b>. Diferente de 2007 ou 2018 — fatos encerrados, com sentença ou arquivamento —, os episódios de 2025 e 2026 estão em curso: inquéritos abertos, delações em homologação, decisões ainda sujeitas a recurso. Por isso, a busca por fonte nesses eventos pode retornar hoje menos matérias do que as existentes para os anos anteriores. Não é ausência de fonte: é ausência de <b>fato consumado</b>. Conforme cada episódio se encerra, esta edição é atualizada.</p>
+      </div>
+      <div class="tier-mini">
+        <div class="tier-mini-item" style="--tc:var(--tier-alta)">
+          <b>Alta confiabilidade</b>
+          <span>Agência Brasil · Aos Fatos · CNN · Estadão · Folha · O Globo</span>
+          <em>Agências públicas, grandes jornais e checadores consolidados.</em>
+        </div>
+        <div class="tier-mini-item" style="--tc:var(--tier-media)">
+          <b>Sólida, com viés declarado</b>
+          <span>Poder360 · Gazeta do Povo · Band · Times Brasil/CNBC</span>
+          <em>Histórico editorial, posicionamento político declarado.</em>
+        </div>
+        <div class="tier-mini-item" style="--tc:var(--tier-var)">
+          <b>Independente / alternativa</b>
+          <span>Sul21 · Brasil de Fato · ICL · Metro1 · Pública</span>
+          <em>Posicionamento editorial claro, sem histórico de distorções.</em>
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+
+<div class="filters">
+  <div class="f"><b>Personagem</b><div class="ch" id="fp"></div></div>
+  <div class="f"><b>Status da informação</b><div class="ch" id="fs"></div></div>
+</div>
+
+<div class="controls">
+  <input type="search" id="search" class="search" placeholder="Buscar eventos…" aria-label="Buscar eventos">
+  <button class="btn-pill" id="highlights-btn" type="button">Só momentos-chave</button>
+  <button class="btn-pill" id="expand-btn" type="button">Expandir detalhes</button>
+</div>
+
+<div class="count" id="cnt"></div>
+
+<nav class="chapter-nav" id="chapter-nav" aria-label="Navegação por capítulo"></nav>
+
+<div class="doc-stamp" role="status">
+  <span class="doc-stamp-label">Dossiê</span>
+  <span class="doc-stamp-item"><b>2026.10</b> · versão</span>
+  <span class="doc-stamp-sep">·</span>
+  <span class="doc-stamp-item"><b id="doc-stamp-count">—</b> eventos</span>
+  <span class="doc-stamp-sep">·</span>
+  <span class="doc-stamp-item"><b id="doc-stamp-anchors">—</b> momentos-chave</span>
+  <span class="doc-stamp-sep">·</span>
+  <span class="doc-stamp-item">Edição contínua</span>
+</div>
+
+<main id="timeline"></main>
+
+<section class="propostas" id="propostas">
+  <div class="propostas-kicker">O que ele propôs</div>
+  <h2 class="propostas-title">O que teria mudado se ele tivesse vencido</h2>
+  <p class="propostas-dek">Propostas documentadas ou anunciadas durante a campanha de 2026 — pela campanha, pelos aliados no Congresso ou pelo próprio Flávio. O status segue o mesmo critério da timeline: documento, alegação ou contestação.</p>
+  <div id="propostas-list"></div>
+</section>
+
+<aside class="lente-coda" id="lente-coda" role="note" aria-label="As três réguas">
+  <div class="lente-coda-kicker">Três réguas</div>
+  <p class="lente-coda-title">Meritocracia. Combate à corrupção. Família.</p>
+  <p class="lente-coda-text">Não pedi que você respondesse a nenhuma das três perguntas. Só pedi que as aplicasse. Se ao final você ainda acha que tudo isso é perseguição, respeite a sua conclusão. Mas se em algum ponto você hesitar, não pare na dúvida. Vá atrás dela.</p>
+</aside>
+
+<footer>Este documento não quer mudar a cabeça de ninguém. Quer que cada fato esteja separado da versão. Presunção de inocência vale — e está respeitada em cada linha. Mas inocência não é o mesmo que falta de evidência.<div style="margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);font-weight:600;color:var(--V);font-size:15px;line-height:1.55;">Se você defende a família tradicional, a meritocracia e o combate à corrupção, o voto já foi dado — mas os valores que você defende continuam seus. E eles não pedem palanque: pedem prática.</div></footer>
+
+</div>
+
+</div><!-- /view-completo -->
+
+<button class="float theme" id="theme" aria-label="Alternar tema">🌙</button>
+<button class="float top" id="top" aria-label="Voltar ao topo">↑</button>
+
+<div class="teia-overlay" id="teia-modal" role="dialog" aria-modal="true" aria-label="A teia: conexões entre personagens">
+  <div class="teia-shell">
+    <div class="teia-main">
+      <div class="teia-topbar">
+        <div class="teia-title" id="teia-modal-title">🕸️ A teia<small>16 nós · clique nos nós ou nas linhas</small></div>
+      </div>
+      <button class="teia-close" id="teia-close" aria-label="Fechar">✕</button>
+      <div class="teia-canvas" id="teia-canvas"></div>
+      <div class="teia-legend">
+        <span><span class="line"></span> Documentado</span>
+        <span><span class="line dash"></span> Investigação</span>
+        <span>·</span>
+        <span>Clique num nó ou numa linha</span>
+      </div>
+    </div>
+    <aside class="teia-sidebar">
+      <div class="teia-sidebar-empty" id="teia-empty">
+        <h4>Explore a teia</h4>
+        <p>Clique num nó para ver quem é a pessoa, ou clique na linha entre dois nós para entender o que os conecta.</p>
+        <div class="hint">
+          <b>Linha cheia</b> = relação documentada.<br>
+          <b>Linha tracejada</b> = alegação, suspeita ou investigação em curso.
+        </div>
+      </div>
+      <div class="teia-info" id="teia-info"></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+var P={
+V:"Vorcaro", Z:"Zettel", F:"Flávio Bolsonaro", A:"Valadão e Lagoinha",
+N:"Nikolas Ferreira", S:"STF", H:"Henrique Vorcaro", B:"Fábio Faria",
+E:"Eduardo Bolsonaro", R:"Rock Bridge / EUA", M:"André Marinho", P:"Paulo Figueiredo",
+W:"Willer Tomaz", K:"Kássio Nunes Marques", C:"Careca do INSS", L:"Lulinha",
+J:"Jair Bolsonaro", Q:"Fabrício Queiroz", X:"Márcio Canela", D:"Adriano da Nóbrega"
+};
+var P_DESC={
+V:"Dono do Banco Master; preso preventivamente.",
+Z:"Pastor e empresário, cunhado de Daniel; a PF o aponta como operador financeiro.",
+F:"Senador (PL-RJ), ex-candidato à Presidência em 2026; investigado no STF.",
+A:"Pastor global da Lagoinha e cantor gospel.",
+N:"Deputado federal (PL-MG).",
+S:"Ministros André Mendonça (relator), Alexandre de Moraes, Flávio Dino e Edson Fachin.",
+H:"Pai de Daniel; preso em maio de 2026.",
+B:"Executivo do SBT News e ex-ministro das Comunicações.",
+E:"Ex-deputado federal; condenado pelo STF por coação.",
+R:"Rede conservadora americana cofundada por J.D. Vance.",
+M:"Humorista e político, autor do documento “Prosperity Partnership”.",
+P:"Comentarista bolsonarista radicado nos EUA.",
+W:"Advogado em Brasília; investigado por lavagem de dinheiro; movimentou R$ 5 bi em bets.",
+K:"Ministro do STF e presidente do TSE; citado em mensagens de Vorcaro.",
+C:"Antônio Carlos Camilo Antunes; apontado como centro do esquema do INSS; preso.",
+L:"Fábio Luiz Lula da Silva; investigado em três inquéritos do STF.",
+J:"Ex-presidente da República; pai e mentor político de Flávio.",
+Q:"Ex-assessor de Flávio na ALERJ; apontado pelo MP como operador da rachadinha.",
+X:"Prefeito de Belford Roxo (RJ); preso pela PF como patrono de organização criminosa armada.",
+D:"Miliciano e ex-capitão do Exército; ex-marido de Daniele (funcionária fantasma); morto em 2020."
+};
+var S={d:"Documentado",a:"Alegação",c:"Contestado",v:"Contexto"};
+var LANE_NAMES={master:"Master",lagoinha:"Lagoinha",raras:"Terras Raras",trajetoria:"Trajetória"};
+
+var E=[
+["Origens","1957 e 1972","Lagoinha nasce em BH e passa aos Valadão","A Igreja Batista da Lagoinha foi fundada em Belo Horizonte em 1957 e, desde 1972, é comandada pela família Valadão. Hoje é uma rede com cerca de 700 unidades, liderada por André Valadão, pastor e cantor gospel, filho de Márcio Valadão. É o pano de fundo religioso do caso.","A","d",["lagoinha"],0,[["Revista Oeste","https://revistaoeste.com/brasil/andre-valadao-cria-banco-digital-para-cristaos/"]]],
+["Origens","Anos 1990","A família Vorcaro se aproxima da Lagoinha","Henrique Vorcaro, pai de Daniel e de Natália, passou a frequentar a igreja e a doar recursos; a família apoiou financeiramente a Rede Super, emissora ligada à Lagoinha. É a origem do vínculo entre a família do banqueiro e a liderança religiosa.","VHA","v",["lagoinha"],0,[["CartaCapital","https://www.cartacapital.com.br/?p=587967"]]],
+["Origens","2000–2002","O primeiro emprego de Flávio foi na Câmara, aos 19","Em dezembro de 2000, aos 19 anos, Flávio Bolsonaro assumiu um cargo comissionado na liderança do PPB, partido do pai, em Brasília. A vaga era a mesma que Ana Cristina Valle, então mulher de Jair, havia deixado uma semana antes. O cargo exigia 40 horas semanais em Brasília, mas ele cursava faculdade de direito presencial no Rio e fazia estágio — a 1.000 km de distância. A BBC perguntou à assessoria como funcionava a jornada; não houve resposta.","FJ","d",["trajetoria"],1,[["BBC News Brasil","https://www.bbc.com/portuguese/brasil-46828487"],["Senado Federal / O Globo (acervo)","https://www2.senado.leg.br/bdsf/bitstream/handle/id/555794/noticia.html?isAllowed=y&sequence=1"],["Congresso em Foco","https://www.congressoemfoco.com.br/noticia/26347/flavio-bolsonaro-ocupou-cargo-na-camara-em-brasilia-enquanto-fazia-faculdade-e-estagio-no-rio"]]],
+["Origens","2009","Flávio foi o único voto contra tirar arma de policial acusado de violência doméstica","Em 2009, o Rio aprovou uma lei que retira a arma do policial acusado de violência doméstica quando a mulher recebe medida protetiva. A Assembleia aprovou sem resistência; só um deputado declarou voto contra — Flávio Bolsonaro. Segundo ele, porque 'as mulheres poderiam estar mentindo'. A fala é pública e está nos registros da votação.","F","d",["trajetoria"],0,[["Brasil de Fato","https://www.brasildefato.com.br/2026/10/16/e-flavio-bolsonaro-defendeu-pm-que-atirou-em-crianca-votou-por-armas-a-agressores-de-mulheres-e-condecorou-milicianos-relembre-historico/"],["ICL Notícias","https://iclnoticias.com.br/flavio-votou-contra-projeto-que-suspende/"],["TVT News","https://tvtnews.com.br/flavio-contra-restricao-arma-policiais-violencia-domestica/"]]],
+["2018–2022","2007–2018","Rachadinha no gabinete de Flávio na ALERJ","O MP-RJ denunciou Flávio e mais 15 pessoas por um esquema de rachadinha no gabinete dele na Assembleia do Rio. Segundo a denúncia, funcionários fantasma devolviam parte dos salários ao gabinete entre 2007 e 2018; Fabrício Queiroz era apontado como operador. O ex-assessor Marcelo Nogueira admitiu ter devolvido 80% do salário. A denúncia foi rejeitada em 2022, depois que o STF anulou as provas do Coaf. Ninguém foi condenado.","FQ","a",["trajetoria"],1,[["Estadão / Senado (acervo)","https://www2.senado.leg.br/bdsf/bitstream/handle/id/609347/noticia.html?sequence=1&isAllowed=y"],["G1","https://g1.globo.com/rj/rio-de-janeiro/noticia/2022/05/11/mp-pede-anulacao-da-denuncia-contra-flavio-bolsonaro-no-caso-das-rachadinhas-sem-prejuizo-do-reinicio-das-investigacoes.ghtml"],["G1","https://g1.globo.com/politica/noticia/2021/09/03/ex-assessor-diz-que-devolvia-todo-mes-dinheiro-da-rachadinha-para-ex-mulher-de-bolsonaro.ghtml"],["Brasil de Fato","https://www.brasildefato.com.br/2022/07/28/ministerio-publico-do-rj-questiona-no-stf-rejeicao-de-denuncia-contra-flavio-bolsonaro/"]]],
+["2018–2022","2018","Zettel se casa com a irmã de Vorcaro","Fabiano Zettel, pastor e empresário, casou-se com Natália Vorcaro, irmã de Daniel, em cerimônia celebrada por André Valadão. Zettel passou a administrar a unidade Belvedere da Lagoinha e, anos depois, seria apontado pela PF como operador financeiro do grupo de Vorcaro. O casamento une a família do banqueiro e a liderança da igreja.","ZVA","d",["lagoinha","master"],0,[["Mais Goiás","https://www.maisgoias.com.br/brasil/cotidiano/cunhado-pastor-divida-de-bmw-e-valsa-as-relacoes-da-igreja-da-lagoinha-com-a-familia-vorcaro/"]]],
+["2018–2022","2018","Master entra no cartão consignado Credcesta, na Bahia","O Credcesta é um cartão de crédito consignado, com desconto em folha, para servidores baianos. Segundo a versão de Vorcaro em uma proposta de delação rejeitada, o Master passou a ter participação na operação a partir da privatização da Ebal, em 2018. Não há confirmação independente do tamanho dessa participação.","V","a",["master"],0,[["Poder360","https://www.poder360.com.br/poder-justica/entenda-como-o-pt-na-bahia-vendeu-o-credcesta-e-negocio-favoreceu-o-master/"],["Informe Baiano","https://informebaiano.com.br/542378/politica/lembra-da-cesta-do-povo-grupo-de-wagner-recebia-r-3-milhoes-por-mes-do-master-diz-vorcaro"]]],
+["2018–2022","Fev 2019","Valadão lança o cartão “Fé”","Em culto, André Valadão anunciou um cartão consignado e disse que havia crédito liberado até para quem estava com o nome restrito, o que gerou críticas. O cartão foi lançado em parceria com o Banco BMG. O produto é anterior à relação do Master com a igreja e não tem vínculo documentado com o banco.","A","d",["lagoinha"],0,[["Hoje em Dia","https://www.hojeemdia.com.br/minas/andre-valad-o-anuncia-cart-o-de-credito-fe-durante-culto-e-causa-polemica-na-internet-1.694857"],["Meia Hora","https://www.meiahora.com.br/geral/2019/02/5621321-pastor-lanca-cartao-de-credito-no-culto-e-causa-revolta-na-internet.html"],["Folha Gospel","https://folhagospel.com/apos-polemica-andre-valadao-explica-ideia-do-cartao-de-credito/"]]],
+["2018–2022","2020","Loja Copenhague: 1.500 depósitos em dinheiro vivo e 54 transferências","O Jornal Nacional mostrou mais de 1.500 depósitos suspeitos em dinheiro vivo na conta da franquia de chocolate Copenhague, da qual Flávio era sócio na Barra da Tijuca. Ele fez 54 transferências da loja para a conta pessoal. O MP suspeitava que a loja fosse usada para lavar dinheiro da rachadinha. É investigação, sem condenação.","F","a",["trajetoria"],0,[["G1 / Jornal Nacional","https://g1.globo.com/jornal-nacional/noticia/2020/08/24/flavio-bolsonaro-fez-saques-nos-dias-em-que-a-loja-dele-recebeu-depositos-em-dinheiro.ghtml"],["Brasil de Fato","https://www.brasildefato.com.br/2020/08/21/loja-de-flavio-bolsonaro-recebeu-1-512-depositos-em-dinheiro-com-valores-repetidos/"],["GZH","https://gauchazh.clicrbs.com.br/politica/noticia/2020/08/flavio-bolsonaro-fez-saques-nos-dias-em-que-sua-loja-recebeu-depositos-em-dinheiro-diz-jornal-nacional-cke9avdqz0004013gnu9yc2a1.html"]]],
+["2018–2022","Nov 2021","STF anula relatórios do Coaf e esvazia caso da rachadinha de Flávio; Kássio vota a favor","Em novembro de 2021, a Segunda Turma do STF anulou os relatórios do Coaf que sustentavam a investigação da rachadinha de Flávio Bolsonaro. Kássio Nunes Marques votou pela anulação. Sem as provas, o Ministério Público do Rio pediu o fim do caso, e Flávio não foi julgado.","FK","d",["raras"],0,[["CartaCapital","https://www.cartacapital.com.br/politica/stf-anula-relatorios-do-coaf-contra-flavio-bolsonaro-no-caso-das-rachadinhas/"]],"Se um ministro indicado por um político que você não apoia votasse a favor dele depois, você chamaria isso de quê?"],
+["2018–2022","2021 a 2024","Patrimônio de Zettel vai de R$ 67 milhões a R$ 204 milhões","O dado consta de relatório do Coaf sobre as movimentações ligadas a Zettel e à igreja. O patrimônio declarado do pastor triplicou em poucos anos. Relatórios do Coaf apontam atividades atípicas, mas não provam crime por si.","Z","d",["lagoinha","master"],0,[["Times Brasil","https://timesbrasil.com.br/brasil/caso-master-igreja-da-lagoinha-recebeu-quase-r-20-milhoes-de-cunhado-de-vorcaro-diz-coaf/"]]],
+["2018–2022","Mar–abr 2022","Master paga R$ 3,89 milhões a produtora ligada a Valadão","O Coaf registrou os pagamentos do Banco Master a uma produtora ligada a André Valadão. Valadão nega qualquer irregularidade. O registro mostra fluxo de dinheiro do banco para pessoas ligadas à igreja já em 2022, antes da crise. Não há acusação formal.","AV","c",["master","lagoinha"],0,[["SBT News","https://sbtnews.sbt.com.br/noticia/economia/andre-valadao-da-lagoinha-recebeu-r-4-milhoes-do-banco-master"]]],
+["2018–2022","2022","Zettel doa R$ 5 milhões a campanhas","O TSE registra doações de R$ 3 milhões a Jair Bolsonaro e R$ 2 milhões a Tarcísio de Freitas, os maiores valores de pessoa física nas duas campanhas. Doações declaradas são legais. Tarcísio diz não ter vínculo com Zettel nem com Vorcaro. Em 2026, Vorcaro afirmaria em proposta de delação que o dinheiro foi contrapartida, o que os citados negam.","ZF","d",["master","raras"],0,[["CNN Brasil","https://www.cnnbrasil.com.br/politica/alvo-da-pf-doou-r-5-mi-para-campanhas-de-bolsonaro-e-tarcisio-em-2022/"],["Metrópoles","https://www.metropoles.com/sao-paulo/master-pf-doador-campanha-tarcisio-bolsonaro"],["InfoMoney","https://www.infomoney.com.br/politica/alvo-da-pf-doou-r-5-milhoes-a-campanha-de-bolsonaro-e-tarcisio-em-2022/"],["Itatiaia","https://www.itatiaia.com.br/politica/cunhado-de-vorcaro-foi-o-maior-doador-das-campanhas-de-tarcisio-e-bolsonaro-em-2022/"]]],
+["2018–2022","20 a 28 out 2022","Nikolas viaja em jato ligado a Vorcaro na campanha","O deputado Nikolas Ferreira (PL-MG) usou por cerca de dez dias, no 2º turno de 2022, um jato ligado a Vorcaro em caravanas pró-Bolsonaro, acompanhado de um pastor da Lagoinha. A defesa de Vorcaro diz que o avião não era dele; Nikolas diz que não sabia quem era o dono. O caso só veio a público em março de 2026.","NVA","c",["master","raras"],0,[["G1 / blog Julia Duailibi","https://g1.globo.com/politica/blog/julia-duailibi/post/2026/03/06/nikolas-usou-jato-de-vorcaro-para-encontro-com-bolsonaro-em-campanha-de-2022.ghtml"],["Agência Brasil","https://agenciabrasil.ebc.com.br/politica/noticia/2026-03/nikolas-ferreira-viajou-em-jato-de-vorcaro-na-campanha-de-2022"],["CNN Brasil","https://www.cnnbrasil.com.br/politica/nikolas-usou-aviao-ligado-a-vorcaro-durante-campanha-para-bolsonaro-em-2022/"],["Super Rádio Tupi","https://www.tupi.fm/brasil/nikolas-usou-jatinho-de-vorcaro-na-campanha-de-bolsonaro/"]]],
+["2023–2024","2021 → 2026","Mansão no Lago Sul quitada em 3 anos; patrimônio declarado salta de R$ 1,7 mi para R$ 8,2 mi","Em 2021, Flávio comprou uma mansão no Lago Sul, em Brasília, por quase R$ 6 milhões. Deu R$ 2,87 milhões de entrada e quitou o financiamento em três anos. O patrimônio declarado ao TSE saltou de R$ 1,7 milhão em 2018 para R$ 8,2 milhões em 2026. Ele explicou a diferença dizendo que vendeu um apartamento e a franquia de chocolate.","F","d",["trajetoria"],0,[["Metrópoles","https://www.metropoles.com/brasil/mansao-de-r-62-milhoes-no-lago-sul-fez-patrimonio-de-flavio-disparar"],["SP Diário","https://spdiario.com.br/noticias/politica/mansao-de-r-62-milhoes-impulsiona-patrimonio-de-flavio-bolsonaro-que-chega-a-r-81-milhoes.html"],["Terra / Purepeople","https://www.terra.com.br/diversao/gente/r-62-milhoes-terreno-de-2400-m-1100-m-construidos-e-quitada-27-anos-antes-do-previsto-a-mansao-de-flavio-bolsonaro-candidato-a-presidencia-em-2026-que-triplicou-seu-patrimonio,47fa74b0f365892e0ed067b91f1d4f83nmo704m9.html"]]],
+["2023–2024","2023","Festa de 15 anos da filha de Vorcaro","A festa de debutante da filha de Daniel Vorcaro, estimada em R$ 15 a 20 milhões, incluiu uma valsa com o filho mais velho de André Valadão. A cerimônia é citada como sinal da proximidade entre as famílias, anos antes da liquidação do banco.","VA","d",["master","lagoinha"],0,[["O Tempo","https://www.otempo.com.br/brasil/2025/11/18/daniel-vorcaro-fez-festa-de-r-20-milhoes-para-filha-de-15-anos-relembre"],["Poder360","https://www.poder360.com.br/poder-economia/vorcaro-gastou-r-15-mi-em-festa-de-aniversario-com-alok-para-a-filha/"],["Band","https://www.band.com.br/entretenimento/daniel-vorcaro-gastou-mais-de-r-15-milhoes-em-festa-da-filha-relembre"],["Infoverus","https://www.infoverus.com.br/geral/a-conexao-entre-daniel-vorcaro-e-andre-valadao-que-poucos-conhecem-familia-festa-de-15-anos-e-bmw/18374"]],"Se um banqueiro investigado tivesse festejado a debutante com a família de um pastor que você respeita, você chamaria isso de quê?"],
+["2023–2024","31 out 2023","Festa de Halloween no Madame Satã","Segundo reportagem da Piauí com base em relatório da PF, Vorcaro organizou em São Paulo uma festa privada com cerca de 120 mulheres e convites a autoridades; foi fantasiado de Drácula. Fábio Faria, executivo do SBT News e ex-ministro das Comunicações, cuidou dos convites masculinos e diz que apenas os repassou a pedido do banqueiro. A casa nega contato com Vorcaro.","VB","d",["master"],0,[["Piauí","https://piaui.uol.com.br/web/festa-suicas-vorcaro-fabio-faria/"],["ND Mais","https://ndmais.com.br/politica/vorcaro-vestido-dracula-festa-investigada/"],["Diário do Centro do Mundo","https://www.diariodocentrodomundo.com.br/vorcaro-foi-de-dracula-a-festa-com-120-mulheres-politicos-e-celulares-retidos/"]]],
+["2023–2024","16 jan 2024","Master contrata o escritório da mulher de Moraes","O banco fechou contrato com o escritório de Viviane Barci de Moraes, casada com o ministro do STF Alexandre de Moraes: 36 parcelas de R$ 3 milhões líquidos, cerca de R$ 131 milhões brutos. Mensagens em posse da PF indicam que Fábio Faria participou da construção do contrato. Faria nega irregularidade.","VBS","d",["master","raras"],0,[["Terra","https://www.terra.com.br/noticias/brasil/politica/r-131-milhoes-no-total-r-3-milhoes-por-mes-como-era-o-contrato-do-escritorio-da-esposa-de-moraes-com-o-banco-master,957046eea1471c81c199f75d16c9c832lbe1gizm.html"],["Folha de Pernambuco","https://www.folhape.com.br/politica/master-pagou-r-34-milhoes-a-escritorio-de-mulher-de-moraes-15/510012/"],["GP1","https://www.gp1.com.br/df/distrito-federal/noticia/2026/9/11/confira-a-integra-do-contrato-de-r-131-milhoes-entre-o-banco-master-e-escritorio-da-esposa-de-moraes-631137.html"],["ND Mais","https://ndmais.com.br/politica/contrato-do-banco-master-com-escritorio-da-esposa-de-moraes/"]]],
+["2023–2024","Mar 2024","Valadão cria o Clava Forte, fintech para o público da igreja","O Clava Forte é uma fintech (não um banco autorizado pelo Banco Central) criada por André Valadão e sua esposa para serviços financeiros voltados a igrejas e fiéis. A fintech entrou na mira da CPMI do INSS e o Banco Central foi acionado por deputados para esclarecer sua atuação. O aplicativo saiu do ar em novembro de 2025, quando o Master foi liquidado.","A","d",["lagoinha"],0,[["Agência Pública","https://apublica.org/2025/12/fintech-de-andre-valadao-sai-do-ar-e-entra-na-mira-da-cpi-do-inss/"],["Metrópoles","https://www.metropoles.com/brasil/economia-br/lider-da-igreja-lagoinha-andre-valadao-lanca-banco-para-fieis"],["ICL Notícias","https://iclnoticias.com.br/deputados-acionam-bc-para-esclarecer-lagoinha/"]]],
+["2023–2024","Mar 2024","“O Careca não pode atrasar”","Em mensagem a Vorcaro, Fábio Faria cobra que o pagamento ao “Careca” não atrase. A Polícia Federal, no relatório, identifica o “careca” como referência a Alexandre de Moraes; não há, porém, acusação formal contra o ministro. A mensagem é lida junto ao contrato de janeiro com o escritório da mulher do ministro.","VBS","a",["master","raras"],0,[["CNN Brasil","https://www.cnnbrasil.com.br/blogs/jussara-soares/politica/fabio-faria-intermediou-contatos-entre-moraes-e-vorcaro-diz-pf/"],["Itatiaia","https://www.itatiaia.com.br/politica/vorcaro-tratava-pagamentos-a-moraes-como-prioridade-o-careca-nao-pode-atrasar/"],["ICL Notícias","https://iclnoticias.com.br/vorcaro-foi-cobrado-sobre-pagamentos-para-mulher-de-moraes-o-careca-nao-pode-atrasar/"],["ND Mais","https://ndmais.com.br/justica/o-careca-nao-pode-atrasar-fabio-faria-alertou-vorcaro-sobre-cobranca-de-moraes-por-pagamentos-ao-escritorio-de-esposa/"]]],
+["2023–2024","Abr 2024","Vorcaro diz ter bancado os voos de Nikolas","Em conversa com o empresário Flávio Carneiro, revelada pelo ICL, Vorcaro afirma ter pago todos os voos usados por Nikolas. Em outra mensagem, o deputado se desculpa por ter criticado um evento do Master em Londres. Nikolas nega ter relação com Vorcaro, e o material divulgado não permite saber o alcance da frase.","VNA","d",["master","raras"],0,[["ICL Notícias","https://iclnoticias.com.br/nikolas-voos-vorcaro-mensagens-master/"],["UOL","https://noticias.uol.com.br/politica/ultimas-noticias/2026/09/03/nikolas-ferreira-audio-daniel-vorcaro.ghtm"],["SBT News","https://sbtnews.sbt.com.br/noticia/politica/nikolas-diz-que-audio-enviado-a-vorcaro-e-irrelevante"],["ICL Notícias","https://iclnoticias.com.br/deputados-inquerito-contra-nikolas-e-vorcaro/"]]],
+["2025","11 dez 2024","Flávio Bolsonaro conhece Vorcaro","O senador Flávio Bolsonaro (PL-RJ) diz ter conhecido o banqueiro nessa data, quando ainda não havia suspeitas públicas sobre ele. O encontro antecede a negociação de recursos de Vorcaro para o filme “Dark Horse”, sobre Jair Bolsonaro, revelada só em 2026.","FV","d",["master","raras"],0,[["Poder360","https://www.poder360.com.br/poder-gente/audio-de-flavio-a-vorcaro-vira-meme-nas-redes-sociais/"]]],
+["2025","Dez 2024 a dez 2025","Conta da Lagoinha Belvedere movimenta R$ 57 milhões","Relatório do Coaf mostra que a conta da unidade, administrada por Zettel, movimentou R$ 57,1 milhões em cerca de um ano, incluindo R$ 19,2 milhões em transferências do próprio Zettel. O faturamento anual presumido da igreja era de R$ 950 mil. A Lagoinha Global diz que a unidade tinha autonomia.","ZA","d",["lagoinha","master"],0,[["Times Brasil","https://timesbrasil.com.br/brasil/caso-master-igreja-da-lagoinha-recebeu-quase-r-20-milhoes-de-cunhado-de-vorcaro-diz-coaf/"],["Gazeta do Paraná","https://gazetadoparana.com.br/publico/igreja-da-lagoinha-movimentou-r-57-milhoes-sob-gestao-de-cunhado-de-vorcaro-aponta-coaf"],["G1","https://g1.globo.com/mg/minas-gerais/noticia/2026/09/14/cunhado-de-vorcaro-ex-do-banqueiro-e-sicario-enviaram-quase-r-20-milhoes-a-igreja-batista-da-lagoinha-aponta-coaf.ghtml"]]],
+["2025","Jan a set 2025","Sete repasses ao fundo Havengate, nos EUA, para o filme","Segundo a delação do doleiro Antônio Carlos Freixo Júnior, o “Mineiro”, foram sete repasses ao fundo Havengate, no Texas, somando US$ 12,3 milhões, para o filme “Dark Horse”. O Intercept havia contado US$ 10,6 milhões entre fevereiro e maio. Flávio diz que todo o dinheiro foi usado na produção do filme.","FV","a",["raras","master"],0,[["G1 / blog Andreia Sadi","https://g1.globo.com/politica/blog/andreia-sadi/post/2026/09/09/delator-do-caso-master-detalha-pagamentos-a-fundo-de-dark-horse.ghtml"],["Metro1","https://www.metro1.com.br/noticias/politica/188184,havengate-ficou-quase-quatro-anos-sem-atividade-antes-de-receber-usdollar-123-milhoes-para-dark-horse"],["Brasil de Fato","https://www.brasildefato.com.br/2026/06/09/intercept-documentos-mostram-como-vorcaro-enviou-dinheiro-aos-eua-para-financiar-dark-horse/"]]],
+["2025","03 set 2025","BRB tenta comprar o Master e o Banco Central rejeita","O BRB, banco estatal do Distrito Federal, anunciou a compra do Master. O Banco Central não aprovou a operação, e a recusa antecede a liquidação do Master, decretada em novembro.","V","d",["master"],0,[["Agência Brasil","https://agenciabrasil.ebc.com.br/economia/noticia/2025-09/bc-rejeita-compra-do-master-pelo-banco-de-brasilia-brb"],["Nord Investimentos","https://www.nordinvestimentos.com.br/blog/bc-rejeita-fusao-brb-banco-master/"],["CNN Brasil","https://www.cnnbrasil.com.br/economia/o-que-levou-o-bc-a-rejeitar-compra-do-banco-master-pelo-brb-em-setembro/"]]],
+["2025","14 mar 2025","Mendonça recebe Vorcaro em São Paulo","O ministro André Mendonça, hoje relator do caso Master no STF, recebeu Vorcaro no Instituto Iter, em encontro articulado por um advogado e pelo deputado Cezinha de Madureira a pedido de pessoas ligadas à Lagoinha, segundo o próprio ministro. Ele diz que apenas ouviu o banqueiro sobre um caso de precatórios. O encontro só veio a público em setembro de 2026.","VSA","d",["master","raras"],0,[["UOL","https://noticias.uol.com.br/politica/ultimas-noticias/2026/09/03/mendonca-deixa-instituto-vorcaro.ghtm"],["Veja","https://veja.abril.com.br/brasil/andre-mendonca-anuncia-saida-de-sociedade-do-instituto-iter/"],["Red.org.br","https://red.org.br/noticias/cezinha-contrato-instituto-andre-mendonca/"]]],
+["2025","30 mar 2025","Nikolas pede a Vorcaro ajuda com um ativo de minério","Em áudio, Nikolas pede que Vorcaro ajude seu ex-assessor e advogado com um ativo minerário e diz querer mais proximidade; Vorcaro responde “deixa comigo”. O áudio foi extraído pela PF e revelado pelo ICL em setembro de 2026. Nikolas nega ter relação com Vorcaro, e o material não mostra se houve ajuda.","NV","d",["raras","master"],0,[["CNN Brasil","https://www.cnnbrasil.com.br/blogs/gustavo-uribe/politica/em-audio-nikolas-pede-ajuda-de-vorcaro-para-liberar-ativo-de-minerio/"],["SBT News","https://sbtnews.sbt.com.br/noticia/politica/nikolas-procurou-vorcaro-para-ajudar-ex-assessor-diz-site"],["ICL Notícias","https://iclnoticias.com.br/nikolas-vorcar-ativo-minerario-conversa-pressao/"]]],
+["2025","30 jul 2025","Trump impõe tarifa de 50% ao Brasil e cita 'emergência nacional'","Trump assinou ordem executiva que elevou a tarifa total sobre produtos brasileiros para 50%, citando políticas do governo Lula como ameaça 'incomum e extraordinária' à segurança dos Estados Unidos. A medida foi o primeiro passo da pressão comercial que, ao longo dos meses seguintes, seria acompanhada de exigências sobre minerais críticos e meios de pagamento.","R","d",["raras"],0,[["Migalhas","https://www.migalhas.com.br/quentes/435762/trump-assina-decreto-e-oficializa-tarifa-de-50-sobre-o-brasil"],["Veja","https://veja.abril.com.br/economia/o-que-e-a-ordem-executiva-14323-que-taxa-o-brasil-em-50-e-foi-prorrogada-por-trump/"],["Embaixada dos EUA","https://br.usembassy.gov/president-donald-j-trump-addresses-threats-to-the-united-states-from-the-government-of-brazil/"]]],
+["2025","16 set 2025","Novo repasse de US$ 1,6 milhão ao Havengate","Segundo a delação do Mineiro, houve um repasse de cerca de US$ 1,6 milhão em 16 de setembro de 2025, depois do prazo que Flávio dá como final para os pagamentos (maio de 2025). A data contradiz a versão pública do senador.","FV","a",["raras","master"],0,[["G1","https://g1.globo.com/politica/noticia/2026/09/01/vorcaro-fez-mais-um-repasse-de-us-16-milhao-para-o-filme-dark-horse-apos-cobrancas-de-flavio-bolsonaro-diz-revista.ghtml"],["CNN Brasil","https://www.cnnbrasil.com.br/blogs/elijonasmaia/politica/dark-horse-vorcaro-repassou-us-16-mi-a-mais-que-o-admitido-por-flavio/"],["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-09/pf-aponta-cobrancas-de-flavio-vorcaro-por-filme-dark-horse"],["Poder360","https://www.poder360.com.br/poder-justica/delator-confirma-7-transferencias-a-fundo-norte-americano-de-dark-horse/"]]],
+["2025","16 out 2025","EUA entregam 21 exigências ao Brasil, incluindo fim do Pix e acesso a terras raras","O governo americano apresentou ao Brasil uma lista de 21 exigências para negociar o tarifaço. Entre os itens estavam o fim do Pix, tarifa zero para produtos americanos, anistia para condenados pelo 8 de janeiro, preferência para empresas dos EUA na compra de minerais críticos e o compromisso de que o Brasil avisaria Washington antes de vender ativos minerais estratégicos. O governo Lula classificou o documento como inaceitável e o rejeitou.","R","d",["raras"],0,[["Estadão","https://www.estadao.com.br/politica/lula-endossou-ato-de-vieira-de-rejeitar-exigencias-dos-eua-sobre-dissidentes-boeing-e-terras-raras/"],["Sintrajufe","https://sintrajufe.org.br/lista-de-exigencias-de-trump-ao-brasil-vao-desde-pix-a-avioes-da-boeing-governo-classificou-exigencias-como-inaceitaveis/"],["ICL Notícias","https://iclnoticias.com.br/flavio-e-aliados-tem-propostas-que-coincidem/"]]],
+["2025","16 nov 2025","Flávio cobra Vorcaro por mensagem, um dia antes da prisão","O senador envia mensagem a Vorcaro cobrando o dinheiro do filme. No dia seguinte, o banqueiro é preso. As conversas seriam publicadas pelo Intercept em maio de 2026, e Flávio admitiu ter pedido o dinheiro.","FV","d",["raras","master"],0,[["ICL Notícias","https://iclnoticias.com.br/flavio-tentou-falar-vorcaro-antes-da-prisao/"],["Folha de Pernambuco","https://www.folhape.com.br/politica/flavio-bolsonaro-tentou-falar-com-vorcaro-na-vespera-da-prisao-do/514625/"],["Correio do Povo","https://www.correiodopovo.com.br/not%C3%ADcias/pol%C3%ADtica/em-audio-divulgado-flavio-bolsonaro-pede-dinheiro-a-vocaro-para-filme-sobre-o-ex-presidente-1.1713309"]]],
+["2025","17 e 18 nov 2025","Vorcaro é preso e o Master é liquidado","Vorcaro foi preso no aeroporto de Guarulhos, sob suspeita de tentar sair do país, e o Banco Central decretou a liquidação do Master. O banco captava dinheiro com CDBs de rendimento muito alto (cerca de 140% do CDI), garantidos pelo FGC. O fundo pagou cerca de R$ 40 bilhões, e 18 fundos de previdência de estados e municípios, com R$ 1,87 bilhão aplicado, ficaram expostos.","VA","d",["master","lagoinha"],1,[["Agência Brasil","https://agenciabrasil.ebc.com.br/economia/noticia/2026-03/bancos-farao-aporte-extra-de-r-325-bilhoes-no-fgc-ate-dia-25"],["CNN Brasil","https://www.cnnbrasil.com.br/politica/a-pf-vorcaro-disse-que-foi-surpreendido-com-liquidacao-do-banco-master/"],["Diário de Pernambuco","https://www.diariodepernambuco.com.br/economia/2026/03/11709047-escandalos-e-liquidacao-entenda-a-crise-envolvendo-as-fraudes-do-banco-master.html"],["Times Brasil","https://timesbrasil.com.br/brasil/banco-master-18-fundos-de-previdencia-tinham-investimentos-no-banco-veja-lista/"],["Gazeta do Povo","https://www.gazetadopovo.com.br/republica/senador-fgc-banque-rombo-previdencias-lesadas-master/"]],"Se um banqueiro preso por fraude tivesse negociado milhões com um político que você não apoia, o que você acharia?"],
+["2025","Nov 2025","Zettel é afastado do pastoreio","Segundo a própria Lagoinha, o pastor foi afastado das funções na unidade Belvedere em novembro de 2025, quando o Master foi liquidado. A informação vem de nota da igreja.","ZA","a",["lagoinha"],0,[["Metrópoles","https://www.metropoles.com/minas-gerais/zettel-era-pastor-de-igreja-em-mg-e-foi-afastado-apos-caso-master"],["Jornal de Brasília / Folhapress","https://jornaldebrasilia.com.br/noticias/brasil/fabiano-zettel-cunhado-de-vorcaro-e-afastado-da-igreja-da-lagoinha-apos-operacao-contra-master/"],["Time Gospel","https://timegospel.com.br/post/2026/01/26/818-lagoinha-global-emite-nota-oficial-sobre-afastamento-de-pastor-e-nega-envolvimento-em-investigacoes"]]],
+["2026","14 jan 2026","Zettel é detido a caminho de Dubai","Na 2ª fase da Operação Compliance Zero, da PF, Zettel foi detido no aeroporto de Guarulhos antes de embarcar para Dubai e teve o celular apreendido; foram cumpridos 42 mandados de busca autorizados pelo STF. A defesa diz que as atividades empresariais dele são lícitas e sem relação com a gestão do Master.","Z","d",["lagoinha","master"],0,[["G1","https://g1.globo.com/sp/sao-paulo/noticia/2026/01/14/banco-master-cunhado-de-vorcaro-e-preso-em-sp-tentando-embarcar-para-dubai-em-jatinho.ghtml"],["Metrópoles","https://www.metropoles.com/sao-paulo/toffoli-ordenou-prisao-de-1-dia-para-evitar-fuga-de-cunhado-de-vorcaro"]]],
+["2026","2026","Márcio Canela: o aliado que Flávio apoiou antes da prisão","Em fevereiro, o grupo de Flávio escolheu Márcio Canela, então prefeito de Belford Roxo, como candidato ao Senado no Rio — e Rogéria Bolsonaro, mãe de Flávio, como primeira suplente da chapa. Em abril, Flávio postou apoio 'integral 100%' ao 'amigo'. Pouco depois, Canela foi preso pela PF como braço político de um esquema que teria lavado R$ 7,6 bilhões do crime organizado em postos de gasolina. Flávio retirou a mãe da chapa. Canela disputou deputado estadual, foi o 2º mais votado do Rio e, 11 dias após a eleição, foi preso de novo, chamado pela PF de 'patrono político de organização criminosa armada'.","FX","d",["trajetoria"],1,[["G1 (15/10/2026)","https://g1.globo.com/rj/rio-de-janeiro/noticia/2026/10/15/investigacao-pf-marcio-canella.ghtml"],["Brasil de Fato","https://www.brasildefato.com.br/2026/10/15/apoiado-por-flavio-bolsonaro-deputado-eleito-preso-e-apontado-pela-pf-por-envolvimento-com-o-crime-organizado-no-rio/"],["G1 (16/10/2026)","https://g1.globo.com/rj/rio-de-janeiro/noticia/2026/10/16/marcio-canella-entenda-acusacoes-contra-o-2o-deputado-mais-votado-no-rj-preso-pela-pf.ghtml"]]],
+["2026","2 e 3 mar 2026","Uso do jato por Nikolas vem a público","Reportagem do jornal O Globo revela que Nikolas usou, em outubro de 2022, o avião ligado a Vorcaro. O deputado negou ter relação com o banqueiro em vídeo nas redes. Em setembro, o ICL divulgaria a mensagem em que Vorcaro diz ter bancado os voos.","N","d",["raras","master"],0,[["Agência Brasil","https://agenciabrasil.ebc.com.br/politica/noticia/2026-03/nikolas-ferreira-viajou-em-jato-de-vorcaro-na-campanha-de-2022"],["CartaCapital","https://www.cartacapital.com.br/politica/a-versao-de-nikolas-ferreira-sobre-uso-de-jatinho-de-vorcaro-em-campanha-para-bolsonaro/"]]],
+["2026","4 mar 2026","Vorcaro e Zettel são presos na 3ª fase da Compliance Zero","Por ordem de Mendonça, a PF prendeu Vorcaro (que estava em prisão domiciliar), Zettel e Luiz Phillipi Mourão, o “Sicário”. Segundo a PF, “A Turma” era um grupo de monitoramento e intimidação de críticos do banco, pago por Zettel. São acusações da PF, ainda não julgadas.","VZS","a",["master","lagoinha"],0,[["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-03/pf-deflagra-terceira-fase-da-operacao-compliance-zero"],["Poder360","https://www.poder360.com.br/poder-justica/leia-a-integra-da-decisao-de-mendonca-que-determinou-a-prisao-de-vorcaro/"],["Congresso em Foco","https://www.congressoemfoco.com.br/noticia/116932/fraude-e-ameacas-por-que-mendonca-mandou-prender-vorcaro"]]],
+["2026","4 a 6 mar 2026","Mourão, o “Sicário”, morre sob custódia da PF","Luiz Phillipi Mourão, apontado como operador de “A Turma”, tentou suicídio na superintendência da PF em Belo Horizonte horas depois de ser preso e morreu dois dias depois, no hospital. A defesa confirmou a morte.","VZ","d",["master"],0,[["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-03/defesa-confirma-morte-de-sicario-aliado-de-vorcaro"],["Gazeta Digital","https://www.gazetadigital.com.br/editorias/economia/aliado-de-vorcaro-e-investigado-sicario-tem-morte-confirmada-pela-defesa/836895"]]],
+["2026","15 mar 2026","Lagoinha Belvedere fecha","A unidade administrada por Zettel encerrou as atividades onze dias depois da prisão do pastor, em meio às apurações do Coaf sobre a conta da igreja. A Lagoinha Global afirma que a unidade era autônoma.","ZA","d",["lagoinha"],0,[["ICL Notícias","https://iclnoticias.com.br/lagoinha-apaga-redes-fecha-templo-crise-master/"],["Por Dentro de Minas","https://pordentrodeminas.com.br/noticias/gerais/2026/03/igreja-lagoinha-belvedere-encerra-atividades-e-apaga-redes-em-meio-a-caso-master/"]]],
+["2026","Mar 2026","Valadão pede perdão por “ter confiado em pessoas”","Em vídeo exibido nas unidades da Lagoinha, André Valadão pediu perdão aos fiéis por ter confiado em pessoas e falou em traição, sem citar nomes. A reportagem cita um domingo (22), sem indicar o mês; provavelmente março de 2026.","A","d",["lagoinha"],0,[["O Dia","https://odia.ig.com.br/colunas/andrei-lara/2026/03/7225774-andre-valadao-usa-telao-da-lagoinha-para-negar-elo-com-escandalo-do-banco-master-e-pedir-perdao.html"],["BHaz","https://bhaz.com.br/noticias/bh/andre-valadao-perdao-fies-caso-master/"],["Itatiaia","https://www.itatiaia.com.br/politica/andre-valadao-pede-desculpas-a-fieis-e-nega-ligacao-com-caso-master-video/"]]],
+["2026","19 mar 2026","Documento 'Prosperity Partnership' propõe parceria mineral entre Brasil e EUA","Um memorando de 22 páginas em inglês, intitulado “Prosperity Partnership”, foi elaborado propondo transformar o Brasil em fornecedor estratégico de minerais críticos para os Estados Unidos. O documento trazia na capa a inscrição “Flávio Bolsonaro | 2026 Campaign” e previa investimentos de US$ 50 bilhões a US$ 100 bilhões em dez anos. O autor confirmou a elaboração, mas negou que fosse oficialmente da campanha.","MFR","a",["raras"],1,[["Jornal de Brasília","https://www.jb.com.br/brasil/politica/2026/09/1060892-rumores-de-eventual-financiamento-por-rede-de-investidores-trumpistas-aumenta-pressao-sobre-campanha-de-flavio-bolsonaro.html"],["Capital Digital","https://capitaldigital.com.br/documento-preve-alianca-com-eua-para-terras-raras-em-eventual-governo-flavio-bolsonaro/"]]],
+["2026","25 mar 2026","Zettel troca de defesa e busca delação","Zettel passou a ser defendido por Celso Vilardi, advogado que também defende Jair Bolsonaro, e tentou um acordo de delação premiada. A expectativa era de que a PF e a PGR rejeitassem a proposta.","Z","d",["lagoinha","master"],0,[["G1","https://g1.globo.com/politica/noticia/2026/04/01/em-busca-de-delacao-advogado-de-zettel-se-reune-com-mendonca.ghtml"],["InfoMoney","https://www.infomoney.com.br/politica/advogados-deixam-defesa-de-zettel-apos-vorcaro-iniciar-delacao/"],["CNN Brasil","https://www.cnnbrasil.com.br/blogs/caio-junqueira/politica/advogado-de-primo-e-operador-financeiro-de-vorcaro-deixa-caso/"],["Poder360","https://www.poder360.com.br/poder-justica/pf-e-pgr-devem-rejeitar-delacao-de-cunhado-de-vorcaro/"]]],
+["2026","28 mar 2026","Flávio Bolsonaro diz na CPAC que o Brasil é 'a solução' dos EUA para terras raras","Em discurso na conferência conservadora CPAC, no Texas, Flávio afirmou em inglês que “o Brasil é a solução da América para quebrar a dependência da China em minerais críticos, especialmente terras raras”. A fala é pública e amplamente noticiada. A interpretação de que isso equivaleria a uma “entrega” das reservas é uma alegação política.","FR","a",["raras"],1,[["Poder360","https://www.poder360.com.br/poder-governo/esquerda-critica-flavio-bolsonaro-por-fala-sobre-terras-raras-nos-eua/"],["Metro1","https://www.metro1.com.br/noticias/politica/180165,flavio-bolsonaro-pede-pressao-diplomatica-sobre-eleicoes-brasileiras-em-evento-nos-eua"]]],
+["2026","13 mai 2026","Intercept revela áudios de Flávio pedindo dinheiro a Vorcaro","O Intercept Brasil publicou áudios e mensagens em que Flávio Bolsonaro pede recursos a Vorcaro para o filme “Dark Horse”, sobre Jair Bolsonaro, num total negociado de US$ 24 milhões. O Estadão confirmou a autenticidade das conversas, e Flávio admitiu ter pedido o dinheiro, que diz ter sido usado integralmente no filme.","FV","d",["raras","master"],0,[["Intercept","https://www.intercept.com.br/2026/05/13/audio-flavio-negociou-vorcaro-milhoes/"],["Correio do Povo","https://www.correiodopovo.com.br/not%C3%ADcias/pol%C3%ADtica/em-audio-divulgado-flavio-bolsonaro-pede-dinheiro-a-vocaro-para-filme-sobre-o-ex-presidente-1.1713309"],["Jornal de Brasília","https://jornaldebrasilia.com.br/noticias/politica/flavio-diz-que-e-mentira-financiamento-de-vorcaro-para-filme-de-bolsonaro-e-dinheiro-privado/"]],"Se esse dinheiro tivesse financiado um filme sobre um político que você não apoia, o que você diria?"],
+["2026","14 mai 2026","Henrique Vorcaro, pai do banqueiro, é preso","Em nova fase da operação, a PF prendeu Henrique Vorcaro, que segundo a investigação teria papel central de gerência em “A Turma” e “Os Meninos”, grupos de monitoramento e intimidação. São alegações da PF, ainda não julgadas.","H","a",["master"],0,[["G1","https://g1.globo.com/politica/noticia/2026/05/14/pai-de-daniel-vorcaro-e-preso.ghtml"],["G1 (A Turma e Os Meninos)","https://g1.globo.com/politica/post/2026/05/14/quem-sao-a-turma-e-os-meninos-grupos-alvos-da-nova-fase-da-compliance-zero-que-intimidavam-pessoas-e-invadiam-sistemas.ghtml"],["Migalhas","https://www.migalhas.com.br/quentes/455902/pf-prende-pai-de-daniel-vorcaro-por-atuacao-em-esquema-do-master"]]],
+["2026","21 mai 2026","Alcolumbre recusa ler o pedido de CPMI do Master","O presidente do Senado, Davi Alcolumbre, recusou-se a ler em sessão o requerimento de uma CPMI sobre o Master, ato necessário para instalá-la. Há pedidos com assinaturas acima do mínimo; o da Câmara também está parado, sob Hugo Motta.","","d",["raras"],0,[["G1","https://g1.globo.com/politica/noticia/2026/05/21/deputados-cobram-cpi-do-master-alcolumbre-rejeita-pedidos-e-diz-que-decisao-e-da-mesa-do-congresso.ghtml"],["Metrópoles","https://www.metropoles.com/brasil/davi-alcolumbre-descarta-leitura-de-pedidos-para-criar-cpmi-do-master"]]],
+["2026","16 jun 2026","STF condena Eduardo Bolsonaro a 4 anos e 2 meses por coação","A Primeira Turma do STF condenou Eduardo Bolsonaro pelo crime de coação no curso do processo, por articular o tarifaço dos EUA contra o Brasil para tentar evitar a condenação do pai. A pena foi de 4 anos e 2 meses em regime semiaberto. A condenação transitou em julgado em 3 de outubro de 2026.","E","d",["raras"],1,[["G1","https://g1.globo.com/politica/noticia/2026/06/16/moraes-vota-para-condenar-eduardo-bolsonaro-por-coacao-em-processo-sobre-trama-golpista.ghtml"],["Poder360","https://www.poder360.com.br/poder-justica/stf-condena-eduardo-a-4-anos-e-2-meses/"],["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-09/primeira-turma-do-stf-mantem-condenacao-de-eduardo-bolsonaro"]]],
+["2026","2026","Caso Ana Clara: Flávio tentou livrar do júri o policial acusado","Ana Clara, de 5 anos, foi morta por um tiro de fuzil da polícia na porta de casa. O policial acusado foi a júri. Flávio Bolsonaro atuou como advogado do réu, tentando tirar o caso do júri popular. A mãe da menina, Cris, hoje vê Flávio perto de alcançar a presidência. A informação sobre a atuação de Flávio como advogado do policial é pública nos autos.","F","d",["trajetoria"],0,[["Veja","https://veja.abril.com.br/politica/entenda-caso-em-que-flavio-atuou-como-advogado-de-pm-acusado-de-matar-menina/"],["Brasil de Fato","https://www.brasildefato.com.br/2026/10/21/defesa-de-policial-acusado-de-matar-ana-clara-leva-flavio-bolsonaro-ao-topo-das-buscas-no-parana/"],["Jornal de Brasília / Folhapress","https://jornaldebrasilia.com.br/noticias/politica-e-poder/flavio-bolsonaro-advogou-para-pm-acusado-de-matar-menina-de-5-anos-no-rio/"]]],
+["2026","22 e 23 jul 2026","Mendonça autoriza inquérito sobre Flávio","O ministro autorizou a PF a investigar lavagem de dinheiro, evasão de divisas e corrupção no financiamento de “Dark Horse”, inclusive se parte do dinheiro bancou Eduardo Bolsonaro nos EUA. Flávio nega que o irmão tenha se beneficiado. É uma investigação, sem acusação formal.","FS","a",["raras","master"],0,[["G1","https://g1.globo.com/politica/noticia/2026/07/23/dark-horse-mendonca-autoriza-abertura-de-investigacao-da-pf-sobre-repasses-para-cinebiografia-de-bolsonaro.ghtml"],["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-09/mendonca-incluiu-flavio-bolsonaro-como-investigado-no-caso-dark-horse"],["Veja","https://veja.abril.com.br/brasil/mendonca-autoriza-inquerito-sobre-repasses-de-vorcaro-para-dark-horse/"]]],
+["2026","2026","Vorcaro propõe delação, e as propostas são rejeitadas","Vorcaro disse que os R$ 5 milhões doados em 2022 foram contrapartidas de um ajuste ligado ao Credcesta; Tarcísio e Kassab negam. Também atribuiu ao grupo do senador Jaques Wagner (PT-BA) repasses de cerca de R$ 3 milhões por mês, o que Wagner nega. A palavra de um investigado em proposta rejeitada não é prova.","VZF","c",["master","raras"],0,[["G1","https://g1.globo.com/politica/noticia/2026/05/20/policia-federal-rejeita-proposta-de-delacao-de-daniel-vorcaro.ghtml"],["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-06/policia-federal-rejeita-segunda-proposta-de-delacao-de-daniel-vorcaro"],["Veja","https://veja.abril.com.br/brasil/pgr-rejeita-proposta-de-delacao-premiada-de-daniel-vorcaro/"],["Poder360","https://www.poder360.com.br/poder-justica/vorcaro-diz-que-doacoes-a-tarcisio-e-bolsonaro-foram-propina/"]]],
+["2026","2 set 2026","Mendonça confirma o encontro com Vorcaro","Após reportagem do ICL, o ministro admitiu o encontro de março de 2025 e diz que apenas ouviu o banqueiro. O encontro ocorreu na sede do Instituto Iter, que Mendonça presidia, e foi articulado pelo advogado Ciro Rocha Soares e pelo deputado Cezinha de Madureira. Mendonça se tornou relator do caso Master no STF em fevereiro de 2026 — quase um ano depois do encontro.","SV","d",["master","raras"],0,[["G1","https://g1.globo.com/jornal-nacional/noticia/2026/09/02/andre-mendonca-confirma-que-recebeu-daniel-vorcaro-para-uma-reuniao-em-marco-de-2025.ghtml"],["CNN Brasil","https://www.cnnbrasil.com.br/politica/mendonca-admite-encontro-com-vorcaro-em-2025-para-tratar-de-precatorios/"],["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-09/ministro-andre-mendonca-admite-encontro-com-vorcaro-uma-unica-vez"]],"Se um ministro do STF recebesse em particular um banqueiro investigado e só viesse a público um ano depois, o que você pediria a ele?"],
+["2026","4 set 2026","USA Rare Earth conclui compra da única mina de terras raras em operação no Brasil","A americana USA Rare Earth concluiu a aquisição do Grupo Serra Verde, dono da mina Pela Ema, em Minaçu (GO), por cerca de US$ 2,8 bilhões. A Serra Verde é a única operação de terras raras em produção comercial no Brasil. O negócio foi fechado semanas antes de uma lei brasileira que condiciona a exploração por estrangeiros ao interesse nacional entrar em vigor.","R","d",["raras"],1,[["Capital Reset","https://capitalreset.uol.com.br/transicao-energetica/usa-rare-earth-conclui-compra-da-serra-verde/"],["Veronoticias","https://veronoticias.com/economia/usa-rare-earth-conclui-compra-da-serra-verde-por-us-28-bilhoes/"],["Times Brasil/CNBC","https://timesbrasil.com.br/empresas-e-negocios/usa-rare-earth-conclui-compra-da-serra-verde-e-assume-unica-mina-comercial-de-terras-raras-do-brasil/"]]],
+["2026","9 set 2026","STF homologa a delação do “Mineiro”","Mendonça homologou o acordo do doleiro Antônio Carlos Freixo Júnior, que detalha repasses ao fundo Havengate para o filme sobre Bolsonaro. A PGR havia fechado o acordo em 3 de setembro. Uma delação precisa ser corroborada por provas.","FVS","d",["raras","master"],0,[["Correio Braziliense","https://www.correiobraziliense.com.br/politica/2026/09/7497084-mendonca-homologa-delacao-de-antonio-carlos-freixo-o-mineiro-no-caso-master.html"],["Brasil de Fato","https://www.brasildefato.com.br/2026/09/09/mendonca-aceita-delacao-de-empresario-que-enviou-r-60-milhoes-a-fundo-ligado-a-eduardo-bolsonaro/"],["Times Brasil","https://timesbrasil.com.br/brasil/mendonca-homologa-delacao-de-mineiro-operador-de-vorcaro-que-movimentou-us-123-milhoes-para-fundo-ligado-a-dark-horse/"]]],
+["2026","10 set 2026","Contrato do Master com a mulher de Moraes é divulgado","Depois de decisão do STF que quebrou o sigilo, veio a público o contrato de 36 parcelas de R$ 3 milhões líquidos entre o Master e o escritório da mulher do ministro Alexandre de Moraes, fechado em janeiro de 2024.","VS","d",["master","raras"],0,[["GP1","https://www.gp1.com.br/df/distrito-federal/noticia/2026/9/11/confira-a-integra-do-contrato-de-r-131-milhoes-entre-o-banco-master-e-escritorio-da-esposa-de-moraes-631137.html"],["CNN Brasil","https://www.cnnbrasil.com.br/politica/contrato-entre-master-e-esposa-de-moraes-previa-pagamento-de-r-108-milhoes/"]]],
+["2026","14 set 2026","Mendonça retira o sigilo do relatório do Coaf","Vieram a público as transferências de Zettel, do pai e da ex de Vorcaro à Lagoinha Belvedere e a movimentação de R$ 57 milhões na conta da unidade.","ZAS","d",["master","lagoinha"],0,[["G1","https://g1.globo.com/mg/minas-gerais/noticia/2026/09/14/cunhado-de-vorcaro-ex-do-banqueiro-e-sicario-enviaram-quase-r-20-milhoes-a-igreja-batista-da-lagoinha-aponta-coaf.ghtml"],["Itatiaia","https://www.itatiaia.com.br/politica/caso-master-r-192-mi-de-cunhado-de-vorcaro-foram-para-igreja-em-bh/"]]],
+["2026","15 set 2026","Dino manda apurar o encontro de Mendonça com Vorcaro","O ministro Flávio Dino determinou que o encontro entre Mendonça e Vorcaro, revelado pelo ICL, seja incluído na apuração sobre a conduta do relator.","S","d",["raras","master"],0,[["Poder360","https://www.poder360.com.br/poder-justica/dino-pede-investigacao-sobre-encontro-entre-mendonca-e-vorcaro/"],["O Globo","https://oglobo.globo.com/politica/noticia/2026/09/09/dino-cita-encontro-de-mendonca-com-vorcaro-e-chama-decisao-de-interferencia-sobre-ministros-e-plenario.ghtml"]]],
+["2026","Set 2026","Cadeia 1789 Capital–Vulcan–Energy Fuels liga fundo de Trump Jr. a projeto de terras raras na Bahia","Reportagens mostraram que o fundo 1789 Capital, do qual Donald Trump Jr. é sócio, investiu na Vulcan Elements, fabricante de ímãs de terras raras. A Vulcan firmou acordo de fornecimento com a Energy Fuels, que comprou 17 concessões minerais entre Prado e Caravelas (BA) por US$ 27,5 milhões em 2023. A conexão com a campanha de Flávio é indireta.","R","d",["raras"],0,[["Diário do Centro do Mundo","https://www.diariodocentrodomundo.com.br/grupo-trumpista-ligado-a-flavio-bolsonaro-investe-em-terras-raras-na-bahia/"],["Metro1","https://www.metro1.com.br/noticias/politica/188782,grupo-dos-eua-ligado-a-campanha-de-flavio-bolsonaro-tem-projeto-de-terras-raras-na-bahia"]]],
+["2026","Out 2026","Mensagens da PF mostram laços entre Valadão e Vorcaro","Reportagem da Pública, com base em mensagens em posse da PF, diz que a relação ia além da religiosa, com conselhos sobre ativos da Lagoinha. Valadão reconhece que se conhecem há décadas e diz que o vínculo se restringe à igreja.","AV","c",["lagoinha","master"],0,[["Agência Pública","https://apublica.org/2026/10/daniel-vorcaro-e-os-lacos-com-andre-valadao-da-igreja-lagoinha/"]]],
+["2026","27 out 2026","Dino manda PF investigar suspeita de financiamento estrangeiro na campanha de Flávio","O ministro Flávio Dino determinou a abertura de inquérito para apurar suspeitas de financiamento estrangeiro e manipulação na internet para favorecer a candidatura de Flávio Bolsonaro. Uma das frentes é a atuação da Rockbridge Network, rede conservadora americana, e a tratativa de dois empresários brasileiros com a rede. A investigação também deverá apurar se o suposto apoio tem relação com interesses estrangeiros nas terras raras. Não há conclusão; os citados negam ilegalidade.","FRS","a",["raras","master"],1,[["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-10/dino-manda-pf-apurar-interferencia-externa-no-processo-eleitoral"],["O Tempo","https://www.otempo.com.br/eleicoes/2026/presidentes/2026/10/27/dino-manda-pf-investigar-suspeita-de-apoio-estrangeiro-a-campanha-de-flavio-bolsonaro"]]],
+["2026","2025","Willer Tomaz movimenta R$ 5 bi em bets e é o maior apostador do Brasil","Nota técnica do Ministério da Fazenda aponta que o advogado Willer Tomaz, amigo de Flávio Bolsonaro, movimentou R$ 5 bilhões em apostas em 2025, o maior volume do país. A PF investiga se as bets foram usadas para lavar dinheiro. A defesa diz que os recursos são lícitos e declarados.","W","d",["raras"],1,[["Exame","https://exame.com/brasil/willer-tomaz-amigo-de-flavio-movimentou-r-5-bi-em-bets-e-foi-maior-apostador-do-pais-em-2025/"],["A Tarde","https://atarde.com.br/politica/amigo-de-flavio-bolsonaro-movimentou-r-5-bilhoes-em-bets-em-2025-1406488"]]],
+["2026","Ago 2026","PF encontra R$ 5 bi em movimentações e dinheiro em livros no escritório de Willer Tomaz","Em agosto de 2026, a PF cumpriu busca no escritório de Willer Tomaz, em Brasília, no âmbito da operação que investiga o desvio de recursos do INSS. Os agentes encontraram uma máquina de contar dinheiro e maços de reais escondidos em livros-cofre. A defesa diz que os valores têm origem lícita.","W","d",["raras"],0,[["Jornal de Brasília / Folhapress","https://jornaldebrasilia.com.br/noticias/politica-e-poder/pf-encontra-sala-secreta-para-guardar-dinheiro-em-hangar-usado-por-amigo-de-flavio-bolsonaro-diz-jornal/"],["CBN","https://cbn.globo.com/politica/noticia/2026/10/21/policia-federal-sala-cofre-apos-receber-denuncia-de-parede-falsa-em-hangar-de-willer-tomaz.ghtml"]]],
+["2026","20 out 2026","PF aponta Flávio Bolsonaro como 'usuário master' de conta da Alcazar Holdings","Relatório da PF enviado ao STF indica que Flávio Bolsonaro estava cadastrado como “usuário master” da conta bancária da Alcazar Holdings, empresa controlada por Willer Tomaz, com elevado nível de acesso e gerenciamento. A PF sustenta a hipótese de “participação econômica ou societária de fato”. Flávio e Willer negam sociedade.","FW","a",["raras"],1,[["CBN","https://cbn.globo.com/politica/noticia/2026/10/21/pf-aponta-indicios-de-sociedade-entre-flavio-bolsonaro-e-advogado-investigado-por-fraudes-no-inss.ghtml"]],"Se um político que você não apoia fosse 'usuário master' da conta de um amigo investigado, você pediria explicação — ou passaria pano?"],
+["2026","23 out 2026","Moraes bloqueia até R$ 6 bilhões de Willer Tomaz e proíbe contato com Flávio","O ministro Alexandre de Moraes determinou o bloqueio de até R$ 6 bilhões em bens do advogado Willer Tomaz, a quebra de sigilos bancário, fiscal e cambial, e a proibição de contato entre Flávio Bolsonaro e o advogado. A decisão atinge a Alcazar Holdings e outras empresas.","SW","d",["raras"],0,[["Agência Brasil","https://agenciabrasil.ebc.com.br/justica/noticia/2026-10/moraes-determina-bloqueio-de-ate-r-6-bilhoes-do-advogado-willer-tomaz"],["Estadão","https://www.estadao.com.br/politica/moraes-bloqueia-r-6-bilhoes-e-cancela-passaportes-de-advogado-investigado-com-flavio-bolsonaro/"]]],
+["2026","2026","Kássio Nunes Marques é citado em mensagens de Vorcaro sobre festas e pagamentos ao filho","Reportagem da Piauí e do UOL revela mensagens em que Daniel Vorcaro trata de encontros com Kássio Nunes Marques e de pagamentos à consultoria Consult, que repassou ao menos R$ 282 mil a Kevin Marques, filho do ministro. O banco Master pagou R$ 6,6 milhões à consultoria. Kássio nega irregularidades e diz que o filho prestou serviços jurídicos.","VK","a",["master","raras"],1,[["Metrópoles","https://www.metropoles.com/brasil/consultoria-ligada-ao-master-e-a-jbs-contratou-filho-de-nunes-marques"],["CNN Brasil","https://www.cnnbrasil.com.br/politica/dialogos-de-vorcaro-citam-suposta-mesada-de-r-500-mil-para-filho-de-nunes/"],["O Globo","https://oglobo.globo.com/politica/noticia/2026/09/15/dialogo-encontrado-no-celular-de-vorcaro-cita-pagamento-mensal-de-r-500-mil-a-filho-de-kassio-nunes.ghtml"]]],
+["2026","2026","Kássio Nunes Marques foi indicado ao STF com articulação de Flávio e Willer, aponta Folha","Reportagem da Folha de S.Paulo, de 2020, revelou que Flávio Bolsonaro e o advogado Willer Tomaz influenciaram a escolha de Kássio Nunes Marques para o STF. Os três eram conhecidos em Brasília como “WWF” (Willer, Wassef e Flávio). Kássio nega que o trio tenha participado de sua seleção.","FWK","a",["raras"],0,[["UOL","https://noticias.uol.com.br/colunas/leticia-casado/2026/08/04/willer-flavio.htm"]]],
+["2026","2026","Contador do Careca do INSS é o mesmo do escritório de Flávio Bolsonaro","Alexandre Caetano dos Reis, contador do escritório de advocacia de Flávio Bolsonaro, era sócio de Antônio Carlos Camilo Antunes, o “Careca do INSS”, em empresa nas Ilhas Virgens Britânicas. A irmã de Alexandre, Letícia Caetano dos Reis, administra o escritório de Flávio desde 2021. Letícia disse que foi indicada por Willer Tomaz.","WC","d",["raras"],1,[["Bahia Notícias","https://www.bahianoticias.com.br/noticia/321055-empresas-de-flavio-bolsonaro-e-do-careca-do-inss-dividem-a-mesma-sala-e-possuem-o-mesmo-contador"],["UOL","https://noticias.uol.com.br/colunas/leticia-casado/2026/08/04/willer-flavio.htm"]]],
+["2026","11 set 2026","Bravo Grafeno, de Flávio e Carlos Bolsonaro, divide sala com 16 empresas do Careca do INSS","A empresa de capacetes Bravo Grafeno, que tem Flávio e Carlos Bolsonaro entre os sócios, está registrada na sala 2601 do Edifício Connect Towers, em Águas Claras (DF), o mesmo endereço de pelo menos 16 empresas ligadas ao “Careca do INSS”. O endereço compartilhado não comprova participação nas fraudes, mas amplia as conexões investigadas.","CE","d",["raras"],0,[["Metro1","https://www.metro1.com.br/noticias/politica/188201,empresa-de-flavio-bolsonaro-divide-endereco-com-16-empresas-ligadas-ao-careca-do-inss"]]],
+["2026","2026","Richarlison acusa Flávio e Willer de tomarem mansão de R$ 10 milhões em Angra","O jogador Richarlison acusa Flávio Bolsonaro e Willer Tomaz de terem obtido a posse de uma mansão em Angra dos Reis, avaliada em R$ 10 milhões, sem pagamento. A propriedade está sob posse da WT Administração de Imóveis, empresa de Willer. Flávio nega vínculo com o imóvel; Willer diz que comprou os direitos legalmente.","FW","c",["raras"],0,[["Revista Fórum","https://revistaforum.com.br/politica/mansao-do-richarlison-flavio-willer/"]]],
+["2026","2026","Zettel vende apartamento a Willer com deságio de R$ 2 milhões; Flávio usa imóvel na campanha","Fabiano Zettel comprou um apartamento em São Paulo por R$ 5,5 milhões em abril de 2025 e o vendeu, em fevereiro de 2026, por R$ 3,5 milhões à WT Administração de Imóveis, empresa de Willer Tomaz — um deságio de R$ 2 milhões. Flávio Bolsonaro usou o imóvel durante a campanha.","ZW","d",["raras"],0,[["Revista Piauí","https://piaui.uol.com.br/web/flavio-bolsonaro-zettel-tomaz-imovel-vila-nova-conceicao-sao-paulo/"],["Folha de S.Paulo","https://www.folha.uol.com.br/poder/2026/09/flavio-bolsonaro-usou-apartamento-de-advogado-investigado-por-fraudes-no-inss-diz-revista.shtml"]]],
+["2026","2026","Allure Eventos: Vorcaro é apontado como sócio oculto de agência que recrutava mulheres para festas","Mensagens obtidas pelo UOL indicam que Daniel Vorcaro negociava a compra de 50% da Allure Eventos, agência que recrutava mulheres para festas privadas. As conversas mencionam refugiadas ucranianas, inclusive uma de 19 anos. A PF abriu inquérito para apurar a participação de estrangeiras e possíveis irregularidades.","VA","a",["master"],1,[["Jornal de Brasília","https://jornaldebrasilia.com.br/entretenimento/katia-flavia/chefe-manda-e-a-gente-executa-mensagens-apontam-vorcaro-como-socio-oculto-de-agencia-de-prostituicao-e-refugiadas/"],["Diário do Centro do Mundo","https://www.diariodocentrodomundo.com.br/apos-denuncias-contra-vorcaro-samia-pede-apuracao-de-possivel-trafico-de-mulheres/"]]],
+["2026","2026","Lulinha é investigado em três inquéritos do STF por suspeita de tráfico de influência","Fábio Luiz Lula da Silva, o Lulinha, é alvo de três inquéritos no STF por suspeita de tráfico de influência em favor de empresas ligadas ao “Careca do INSS”. A PF aponta que sua atuação era intermediada pela lobista Roberta Luchsinger. A PGR, porém, afirmou que não há prova de negócio fechado, e um relatório da PF não o indiciou. Ele nega irregularidades.","L","a",["raras"],0,[["G1","https://g1.globo.com/politica/noticia/2026/08/20/lulinha-pgr-diz-que-pf-nao-identificou-conclusao-de-nenhum-negocio-do-careca-do-inss-com-o-governo.ghtml"],["Revista Fórum","https://revistaforum.com.br/politica/pgr-pf-lulinha/"]]],
+["2026","25 out 2026","Flávio perde a eleição presidencial no 2º turno","Lula venceu o 2º turno em 25 de outubro de 2026 com 51,79% dos votos válidos (64.256.232), contra 48,21% de Flávio Bolsonaro (59.826.041) — margem de 3,58 pontos, ou 4.430.191 votos. A votação foi prorrogada das 17h para as 19h por decisão do ministro Cristiano Zanin, do STF. Flávio havia liderado o 1º turno, em 4 de outubro, com 47,03% contra 45,16% de Lula. Na noite da derrota, em pronunciamento por volta das 22h40, Flávio disse ser 'impossível reconhecer o resultado das eleições' e atribuiu a derrota à decisão de Zanin; no dia seguinte, recuou do pedido de anulação e passou a falar em cassação da chapa Lula-Alckmin, sem apresentar provas. Em 30 de outubro, em live, usou a expressão 'gols de mão' para insinuar irregularidades. O PL, o Centrão (PP, PSD, MDB) e o coordenador da campanha, Rogério Marinho, reconheceram o resultado; Marinho disse não haver provas de fraude.","FS","d",["trajetoria"],1,[["TSE","https://www.tse.jus.br/comunicacao/noticias/2026/Outubro/presidente-do-tse-anuncia-reeleicao-de-lula-e-faz-balanco-do-2o-turno-das-eleicoes-2026"],["Gazeta do Povo","https://www.gazetadopovo.com.br/eleicoes/2026/flavio-bolsonaro-pronunciamento-anulacao-eleicao/"],["Metrópoles","https://www.metropoles.com/brasil/flavio-nao-vai-mais-pedir-anulacao-da-eleicao-dizem-aliados-e-juridico"],["Tribuna de Minas","https://tribunademinas.com.br/noticias/politica/27-10-2026/centrao-reconhece-vitoria-de-lula-e-deixa-flavio-bolsonaro-isolado-em-contestacao-da-eleicao.html"],["Times Brasil","https://timesbrasil.com.br/eleicoes-2026/a-decisao-eu-tomei-sem-que-ninguem-soubesse-diz-flavio-bolsonaro/"]],"Se um político que você não apoia tivesse perdido a eleição e se recusado a reconhecer o resultado — mesmo sem provas de fraude —, o que você chamaria isso?"],
+["2026","27 e 28 out 2026","Flávio deixa o Brasil após a derrota","Em 26 de outubro, um dia após a derrota, Flávio foi intimado pela PF, por ordem de Alexandre de Moraes, a entregar os passaportes. Em 27 de outubro, cruzou a fronteira com a Argentina em Puerto Iguazú e embarcou às 23h30 rumo aos EUA, com escala em Guayaquil. Pousou em Miami (Opa-Locka) por volta das 10h25 de 28 de outubro, com a mulher e as duas filhas. Flávio diz que saiu para escapar de 'perseguição política e judicial' e que está em 'regime de exceção'; afirma que decidiu com a esposa, sem avisar ninguém, e que fica fora para 'continuar atuando politicamente'. Em live de 30 de outubro, disse: 'Não fugi do Brasil, eu saí pelo Brasil.' O contexto é o inquérito do STF sobre lavagem de dinheiro e evasão de divisas no qual ele e Willer Tomaz são investigados. A CNN registrou que ele entrou nos EUA com o passaporte diplomático que a PF havia mandado cancelar; as autoridades argentinas disseram que ele entrou com documentação válida. O NYT (via CartaCapital) afirmou que o jato foi providenciado por Jason Miller, assessor da Casa Branca, e que Trump garantiu a entrada; Marco Rubio, secretário de Estado, negou envolvimento dos EUA. Até 31 de outubro, não havia anunciado data de volta.","FS","d",["trajetoria"],1,[["Times Brasil (cronologia)","https://timesbrasil.com.br/brasil/veja-a-cronologia-da-saida-de-flavio-bolsonaro-para-os-estados-unidos/"],["Metrópoles","https://www.metropoles.com/mundo/aviao-flavio-bolsonaro-chega-eua-trump"],["CNN Brasil","https://www.cnnbrasil.com.br/politica/o-que-se-sabe-sobre-a-saida-de-flavio-bolsonaro-do-brasil/"],["CartaCapital (NYT)","https://www.cartacapital.com.br/politica/jato-que-levou-flavio-bolsonaro-aos-eua-foi-providenciado-por-assessor-de-trump-diz-nyt/"]],"Se um político que você não apoia tivesse deixado o país após perder a eleição, alegando perseguição, o que você chamaria isso?"]
+];
+
+E.forEach(function(e, i){ e.docId = 'DOC ' + String(i+1).padStart(3, '0'); });
+
+var PROPOSTAS = [
+  {
+    tema: "Trabalho e renda",
+    itens: [
+      {
+        titulo: "CLT ou contrato por hora — escolha do trabalhador",
+        desc: "Emenda constitucional assinada por Flávio permitiria ao trabalhador escolher entre CLT e contrato por hora, com o acordo individual valendo mais que o negociado pelo sindicato. Críticos apontavam que o trabalhador negociaria sozinho com a empresa, sem a proteção coletiva.",
+        status: "a",
+        fontes: [["Senado Federal — PEC 12/2026","https://www25.senado.leg.br/web/atividade/materias/-/materia/174362"],["Fundação Perseu Abramo","https://fpabramo.org.br/pec-do-senador-rogerio-marinho-pl-cria-regime-por-hora-trabalhada-e-ameaca-avanco-do-fim-da-escala-6x1/"],["SindCT","https://sindct.org.br/sindct/comunicacao/noticias-do-sindct/pec-12-2026-riscos-para-os-trabalhadores-e-vantagens-para-os-empregadores/"]]
+      },
+      {
+        titulo: "Escala 6x1 — do 'oportunismo' ao voto a favor",
+        desc: "Flávio Bolsonaro mudou de posição sobre o fim da escala 6x1 ao longo de 2026. Em maio, criticou a PEC como 'eleitoreira' e com 'grande carga de hipocrisia'. Em agosto, defendeu um modelo alternativo de contrato por hora. Em outubro, chamou Lula de 'oportunista' por acelerar a votação — e, a menos de duas semanas do segundo turno, anunciou voto a favor da proposta, que foi aprovada na Câmara em maio e votada no Senado em 14 de outubro. O recuo foi atribuído ao temor de perder votos dos trabalhadores. Flávio manteve ressalvas: alertou para risco de desemprego, informalidade e aumento de custos.",
+        status: "d",
+        fontes: [["O Povo","https://www.opovo.com.br/noticias/politica/2026/10/14/apos-mudar-de-ideia-flavio-bolsonaro-vota-a-favor-da-pec-do-fim-da-escala-6x1.html"],["Poder360","https://www.poder360.com.br/poder-eleicoes-2026/flavio-diz-que-nao-vai-retomar-a-escala-6-x-1/"]]
+      },
+      {
+        titulo: "Isenção de IR até R$ 5.000 — e a emenda dos dividendos",
+        desc: "A isenção para quem ganha até R$ 5.000 foi aprovada em 2025. Flávio criticou a taxação de dividendos como 'dupla cobrança' — e apresentou emenda para isentar profissionais liberais da nova incidência. A emenda, protocolada em 5 de novembro de 2025, beneficiaria a categoria que inclui o próprio escritório de advocacia dele. Não foi aprovada: o texto sancionado manteve a retenção de 10% sobre dividendos acima de R$ 50 mil/mês.",
+        status: "d",
+        fontes: [["SBT News","https://sbtnews.sbt.com.br/noticia/politica/flavio-propos-isencao-no-ir-que-beneficiaria-escritorio-dele"],["Brasil247","https://www.brasil247.com/poder/flavio-bolsonaro-apresentou-emenda-para-isentar-de-imposto-escritorios-como-o-dele"]]
+      }
+    ]
+  },
+  {
+    tema: "Armas",
+    itens: [
+      {
+        titulo: "Porte de arma = CNH",
+        desc: "Aliados no Congresso (Paulo Bilynskyj, Marcos Pollon) querem que o porte siga o modelo da carteira de motorista: psicotécnico, teste prático, sem antecedentes, e o cidadão leva. Hoje, cerca de 85 milhões de brasileiros têm CNH.",
+        status: "a",
+        fontes: [["IHU Unisinos","https://ihu.unisinos.br/672256-equipe-de-flavio-bolsonaro-ja-fala-em-cnh-das-armas"],["Brasil247","https://www.brasil247.com/brasil/bolsonaristas-se-preparam-para-votar-cnh-das-armas-logo-no-inicio-de-eventual-governo-flavio/"]]
+      },
+      {
+        titulo: "Fim do rastreio de munição",
+        desc: "Flávio defende retirar a marcação das balas — o número na cápsula que permitiu identificar os assassinos de Marielle Franco e que é a base para investigar desvio de munição da polícia.",
+        status: "d",
+        fontes: [["Jornal de Brasília / Folhapress","https://jornaldebrasilia.com.br/noticias/politica-e-poder/fim-da-marcacao-de-municoes-e-a-progressao-de-pena-veja-o-que-flavio-defende-na-seguranca/"],["CartaCapital","https://www.cartacapital.com.br/politica/fim-do-rastreamento-de-municoes-defendido-por-flavio-bolsonaro-alimenta-o-crime-alertam-policiais/"]]
+      },
+      {
+        titulo: "Programa 'Minha Primeira Arma'",
+        desc: "Proposta do deputado Marcos Pollon (PL-MS): imposto zero, empréstimo de banco público e subsídio para a primeira arma. Na prática, a proposta trata a primeira arma como um bem de acesso facilitado — na linha do que se faz com a primeira habilitação ou a primeira bicicleta.",
+        status: "a",
+        fontes: [["Agência Câmara","https://www.camara.leg.br/noticias/1244726-projeto-cria-programa-para-subsidiar-compra-de-arma-de-fogo/"],["Gazeta Digital","https://www.gazetadigital.com.br/editorias/economia/comissao-aprova-projeto-que-possibilita-a-aquisicao-e-porte-de-armas-de-fogo-veja/836895"]]
+      }
+    ]
+  }
+];
+var ERAS=["Origens","2018–2022","2023–2024","2025","2026"];
+var ACCENTS=["--V","--Z","--S","--F","--M"];
+var CHAPTER_INTROS={
+"Origens":"Nada aqui é crime. É só o registro de quem conheceu quem, quando e como. Vale saber: essas linhas se cruzaram décadas antes de qualquer investigação existir.",
+"2018–2022":"Esta é a fase em que quase tudo ainda era bastidor. Nada aqui é notícia nova. São registros, doações, viagens — o que já existia em papel antes de qualquer crise virar manchete.",
+"2023–2024":"Os documentos desta fase não são notícia nova. São registros do Coaf, contratos, valores. Cada linha tem status. Nenhuma delas é opinião.",
+"2025":"O ano em que o papel deixou de ser bastidor e virou inquérito. Os fatos estão marcados. As alegações também.",
+"2026":"Os documentos desta fase são os mais recentes — e os que ainda estão em curso. O que está provado está marcado como provado. O que ainda não, também."
+};
+
+var fp=new Set(),fs=new Set(),query="",highlightsOnly=false;
+var $=function(i){return document.getElementById(i)};
+
+/* ==================== VIEW SWITCHING ==================== */
+function showView(view){
+  var resumo = document.getElementById('view-resumo');
+  var completo = document.getElementById('view-completo');
+  if(!resumo || !completo) return;
+  resumo.classList.toggle('active', view === 'resumo');
+  completo.classList.toggle('active', view === 'completo');
+  window.scrollTo({top:0, behavior:'instant'});
+  if(view === 'completo'){
+    if(window.location.hash !== '#completo') history.replaceState(null, '', '#completo');
+  } else {
+    if(window.location.hash === '#completo') history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+}
+function handleHash(){
+  if(window.location.hash === '#completo'){
+    showView('completo');
+  } else {
+    showView('resumo');
+  }
+}
+window.addEventListener('hashchange', handleHash);
+function eraId(era){return 'ch-'+era.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+
+(function(){
+  var saved=localStorage.getItem('theme');
+  if(saved)document.documentElement.setAttribute('data-theme',saved);
+  var btn=$('theme');
+  function isDark(){var a=document.documentElement.getAttribute('data-theme');if(a==='dark')return true;if(a==='light')return false;return matchMedia('(prefers-color-scheme: dark)').matches}
+  function update(){btn.textContent=isDark()?'☀️':'🌙'}
+  btn.onclick=function(){var next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('theme',next);update()};
+  update();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',update);
+})();
+
+$('st-ev').textContent=E.length;
+$('st-an').textContent=E.filter(function(e){return e[7]===1}).length;
+$('st-ch').textContent=Object.keys(P).length;
+(function(){
+  var c=document.getElementById('doc-stamp-count');
+  var a=document.getElementById('doc-stamp-anchors');
+  if(c) c.textContent = E.length;
+  if(a) a.textContent = E.filter(function(e){return e[7]===1}).length;
+})();
+(function(){
+  var c={master:0,lagoinha:0,raras:0,trajetoria:0};
+  E.forEach(function(e){e[6].forEach(function(l){c[l]++})});
+  $('fc-master').textContent=c.master;
+  $('fc-lagoinha').textContent=c.lagoinha;
+  $('fc-raras').textContent=c.raras;
+  $('fc-trajetoria').textContent=c.trajetoria;
+})();
+
+(function(){
+  var g=$('people-mini');
+  Object.keys(P).forEach(function(k){
+    var d=document.createElement('div');
+    d.className='person-row';
+    d.innerHTML='<i style="--c:var(--'+k+')"></i><div><b>'+P[k]+'</b><span>'+(P_DESC[k]||'')+'</span></div>';
+    g.appendChild(d);
+  });
+})();
+
+function chips(id,map,set,dot){
+  var h=$(id);
+  Object.keys(map).forEach(function(k){
+    var b=document.createElement('button');
+    b.setAttribute('aria-pressed','false');
+    b.style.setProperty('--c',dot?'var(--'+k+')':'var(--s'+k+')');
+    b.innerHTML=(dot?'<i></i>':'')+map[k];
+    b.onclick=function(){set.has(k)?set.delete(k):set.add(k);b.setAttribute('aria-pressed',set.has(k));render()};
+    h.appendChild(b);
+  });
+}
+chips('fp',P,fp,true);
+chips('fs',S,fs,false);
+
+$('search').oninput=function(){query=this.value.toLowerCase().trim();render()};
+$('highlights-btn').onclick=function(){highlightsOnly=!highlightsOnly;this.classList.toggle('active',highlightsOnly);render()};
+var expandBtn=$('expand-btn'),allExpanded=false;
+expandBtn.onclick=function(){
+  allExpanded=!allExpanded;
+  document.querySelectorAll('details.event').forEach(function(d){d.open=allExpanded});
+  expandBtn.textContent=allExpanded?'Recolher detalhes':'Expandir detalhes';
+};
+
+function matchFilter(e){
+  if(highlightsOnly && e[7]!==1)return false;
+  if(fp.size && !e[4].split('').some(function(c){return fp.has(c)}))return false;
+  if(fs.size && !fs.has(e[5]))return false;
+  if(query){
+    var hay=(e[2]+' '+e[3]).toLowerCase();
+    if(hay.indexOf(query)===-1)return false;
+  }
+  return true;
+}
+
+function renderAnchor(e){
+  var lane=e[6][0];
+  var chars=e[4].split('').map(function(c){return '<i style="--c:var(--'+c+')" title="'+P[c]+'"></i>'}).join('');
+  var laneTags=e[6].map(function(l){return '<span class="lane-tag" style="--c:var(--lane-'+l+')">'+LANE_NAMES[l]+'</span>'}).join('');
+  var srcs=e[8].map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener noreferrer">'+l[0]+'</a>'}).join(' · ');
+  var mirror=e[9]?'<div class="anchor-mirror"><strong>Pense nisso antes de ler</strong>'+e[9]+'</div>':'';
+  return '<article class="event anchor" style="--lane-color:var(--lane-'+lane+')">'+
+    '<div class="anchor-head">'+
+      '<span class="anchor-head-left"><span class="doc-id">'+e.docId+'</span><span class="anchor-date">'+e[1]+'</span></span>'+
+      '<span class="st s'+e[5]+'">'+S[e[5]]+'</span>'+
+    '</div>'+
+    mirror+
+    '<h3 class="anchor-title">'+e[2]+'</h3>'+
+    '<p class="anchor-desc">'+e[3]+'</p>'+
+    '<div class="anchor-meta">'+
+      '<span class="label">Personagens</span><span class="char-dots">'+chars+'</span>'+
+      '<span class="label">Frentes</span>'+laneTags+
+      '<span class="sources" style="margin-left:auto"><span class="label">Fontes</span> '+srcs+'</span>'+
+    '</div>'+
+  '</article>';
+}
+
+function renderCompact(e){
+  var lane=e[6][0];
+  var laneTags=e[6].map(function(l){return '<span class="lane-tag" style="--c:var(--lane-'+l+')">'+LANE_NAMES[l]+'</span>'}).join('');
+  var srcs=e[8].map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener noreferrer">'+l[0]+'</a>'}).join(' · ');
+  var mirror=e[9]?'<div class="compact-mirror"><strong>Pense nisso antes de ler</strong>'+e[9]+'</div>':'';
+  return '<details class="event compact" style="--lane-color:var(--lane-'+lane+')">'+
+    '<summary>'+
+      '<span class="compact-date">'+e.docId+' · '+e[1]+'</span>'+
+      '<span class="compact-title">'+e[2]+'</span>'+
+      '<span class="st s'+e[5]+'">'+S[e[5]]+'</span>'+
+      '<span class="compact-chev">▸</span>'+
+    '</summary>'+
+    '<div class="compact-body">'+
+      mirror+
+      '<p>'+e[3]+'</p>'+
+      '<div class="compact-meta">'+
+        '<span><b>Personagens:</b> '+e[4].split('').map(function(c){return P[c]}).join(', ')+'</span>'+
+        '<span><b>Frentes:</b> '+laneTags+'</span>'+
+        '<span><b>Fontes:</b> '+srcs+'</span>'+
+      '</div>'+
+    '</div>'+
+  '</details>';
+}
+
+var LENTES = {
+  "2023–2024": {
+    valor: "meritocracia",
+    label: "Sua régua · meritocracia",
+    abertura: "Você acredita que o que a pessoa tem, ela conquistou.",
+    corpo: "Um senador que começou a trabalhar aos 19 anos, num cargo comissionado no partido do pai, a 1.000 km da faculdade, e cujo patrimônio declarado passou de R$ 1,7 milhão para R$ 8,2 milhões em oito anos.",
+    pergunta: "Se fosse o filho de um político que você não apoia, você chamaria isso de quê?"
+  },
+  "2025": {
+    valor: "corrupcao",
+    label: "Sua régua · combate à corrupção",
+    abertura: "Você acredita que corrupção não tem lado.",
+    corpo: "Um senador que negociou US$ 24 milhões com um banqueiro que seria preso por fraude, para financiar um filme sobre o próprio pai.",
+    pergunta: "Se fosse um senador do partido que você não apoia, você chamaria isso de quê?"
+  },
+  "2026": {
+    valor: "familia",
+    label: "Sua régua · família",
+    abertura: "Você acredita que a família é a base de tudo.",
+    corpo: "Um projeto político que pôs a mãe como suplente de um aliado depois preso como 'patrono' de organização criminosa, tem o irmão condenado pelo STF e o cunhado como operador financeiro.",
+    pergunta: "Se fosse a família de um político que você não apoia, você chamaria isso de quê?"
+  }
+};
+
+function renderLente(era){
+  var l = LENTES[era];
+  if(!l) return '';
+  return '<aside class="lente" role="note" aria-label="'+l.label+'" style="--lente-color:var(--lente-'+l.valor+')">'+
+    '<span class="lente-label">'+l.label+'</span>'+
+    '<p class="lente-abertura">'+l.abertura+'</p>'+
+    '<p class="lente-corpo">'+l.corpo+'</p>'+
+    '<p class="lente-pergunta">'+l.pergunta+'</p>'+
+  '</aside>';
+}
+
+function renderChapter(num,era,events){
+  var accent='var('+ACCENTS[(num-1)%ACCENTS.length]+')';
+  var anchors=events.filter(function(e){return e[7]===1}).length;
+  var stats=events.length+' evento'+(events.length===1?'':'s')+(anchors?' · '+anchors+' momento'+(anchors===1?'':'s')+'-chave':'');
+  var eventsHtml=events.map(function(e){return e[7]===1?renderAnchor(e):renderCompact(e)}).join('');
+  var intro=CHAPTER_INTROS[era]?'<p class="chapter-intro">'+CHAPTER_INTROS[era]+'</p>':'';
+  return '<section class="chapter" id="'+eraId(era)+'">'+
+    '<header class="chapter-head" style="--chapter-accent:'+accent+'">'+
+      '<div class="chapter-num">'+String(num).padStart(2,'0')+'</div>'+
+      '<div class="chapter-meta"><h2 class="chapter-title">'+era+'</h2><div class="chapter-stats">'+stats+'</div></div>'+
+    '</header>'+
+    intro+
+    renderLente(era)+
+    '<div class="events">'+eventsHtml+'</div>'+
+  '</section>';
+}
+
+function render(){
+  var visible=E.filter(matchFilter);
+  var byEra={};
+  visible.forEach(function(e){if(!byEra[e[0]])byEra[e[0]]=[];byEra[e[0]].push(e)});
+  var html='';
+  ERAS.forEach(function(era,idx){if(byEra[era])html+=renderChapter(idx+1,era,byEra[era])});
+  $('timeline').innerHTML=html || '<p class="e">Nenhum evento com essa combinação de filtros.</p>';
+  $('cnt').innerHTML='<b>'+visible.length+'</b> de '+E.length+' eventos · <b>'+visible.filter(function(e){return e[7]===1}).length+'</b> momentos-chave';
+  allExpanded=false;expandBtn.textContent='Expandir detalhes';
+  updateChapterNav();
+}
+
+function updateChapterNav(){
+  var chapters=document.querySelectorAll('#timeline .chapter');
+  var nav=$('chapter-nav');
+  nav.innerHTML='';
+  chapters.forEach(function(ch){
+    var title=ch.querySelector('.chapter-title').textContent;
+    var a=document.createElement('a');
+    a.href='#'+ch.id;
+    a.textContent=title;
+    a.onclick=function(ev){ev.preventDefault();ch.scrollIntoView({behavior:'smooth',block:'start'})};
+    nav.appendChild(a);
+  });
+}
+
+function updateChapterIndicator(){
+  var chapters=document.querySelectorAll('#timeline .chapter');
+  var current=null;
+  chapters.forEach(function(ch){if(ch.getBoundingClientRect().top<=120)current=ch});
+  var indicator=$('chapter-indicator');
+  var navLinks=document.querySelectorAll('#chapter-nav a');
+  navLinks.forEach(function(a){a.classList.remove('active')});
+  if(current && current.getBoundingClientRect().top>-current.offsetHeight){
+    indicator.textContent=current.querySelector('.chapter-title').textContent;
+    indicator.classList.add('show');
+    var link=document.querySelector('#chapter-nav a[href="#'+current.id+'"]');
+    if(link)link.classList.add('active');
+  } else if(window.scrollY<200){
+    indicator.classList.remove('show');
+  }
+}
+
+function renderPropostas(){
+  var container=document.getElementById('propostas-list');
+  if(!container) return;
+  var html=PROPOSTAS.map(function(bloco){
+    var itens=bloco.itens.map(function(it){
+      var stLabel=S[it.status]||it.status;
+      var fontes=(it.fontes||[]).map(function(f){
+        return '<a href="'+f[1]+'" target="_blank" rel="noopener noreferrer">'+f[0]+'</a>';
+      }).join(' · ');
+      return '<div class="proposta-item" style="--lane-color:var(--lane-trajetoria)">'+
+        '<div class="proposta-head">'+
+          '<h4 class="proposta-titulo">'+it.titulo+'</h4>'+
+          '<span class="st s'+it.status+'">'+stLabel+'</span>'+
+        '</div>'+
+        '<p class="proposta-desc">'+it.desc+'</p>'+
+        (fontes?'<div class="proposta-fontes"><span class="label">Fontes</span> '+fontes+'</div>':'')+
+      '</div>';
+    }).join('');
+    return '<div class="proposta-bloco">'+
+      '<h3 class="proposta-tema">'+bloco.tema+'</h3>'+
+      itens+
+    '</div>';
+  }).join('');
+  container.innerHTML=html;
+}
+
+var progress=$('progress'),topBtn=$('top');
+function onScroll(){
+  var h=document.documentElement;
+  var pct=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;
+  progress.style.width=pct+'%';
+  topBtn.classList.toggle('show',h.scrollTop>400);
+  updateChapterIndicator();
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+topBtn.onclick=function(){window.scrollTo({top:0,behavior:'smooth'})};
+
+/* ==================== TEIA ==================== */
+function shadeColor(color, percent) {
+  var num = parseInt(color.replace('#',''), 16);
+  var r = Math.max(0, Math.min(255, (num >> 16) + percent));
+  var g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + percent));
+  var b = Math.max(0, Math.min(255, (num & 0x0000FF) + percent));
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+function makeAvatar(name, color) {
+  var canvas = document.createElement('canvas');
+  canvas.width = 160;
+  canvas.height = 160;
+  var ctx = canvas.getContext('2d');
+  var cx = 80, cy = 80;
+  
+  // Anel externo tracejado (selo)
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, 76, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // Círculo interno com gradiente
+  var grad = ctx.createLinearGradient(0, 0, 40, 160);
+  grad.addColorStop(0, color);
+  grad.addColorStop(1, shadeColor(color, -50));
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 68, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Anel branco sutil
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 66, 0, Math.PI * 2);
+  ctx.stroke();
+  
+  // Iniciais
+  var parts = name.trim().split(/\s+/);
+  var initials = (parts[0][0] + (parts.length > 1 ? parts[parts.length-1][0] : '')).toUpperCase();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 52px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initials, cx, cy + 6);
+  
+  return canvas.toDataURL();
+}
+
+// Paleta alinhada: V (Vorcaro) e MASTER (Banco Master) em teal institucional
+// (--lane-master #0f766e / #5eead4), consistente com a lane no documento.
+// W (Willer), K (Kássio), Z (Zettel), etc. mantêm suas cores pessoais.
+var TEIA_NOS = [
+  {id:"F", label:"Flávio Bolsonaro", color:"#1d4ed8", size:44, x:0, y:0, title:"Senador (PL-RJ) · ex-candidato à Presidência"},
+  {id:"W", label:"Willer Tomaz", color:"#be123c", size:32, x:-260, y:0, title:"Advogado · investigado pela PF"},
+  {id:"V", label:"Daniel Vorcaro", color:"#0f766e", size:32, x:260, y:0, title:"Dono do Banco Master · preso"},
+  {id:"K", label:"Kássio Nunes", color:"#6d28d9", size:30, x:0, y:260, title:"Ministro do STF · presidente do TSE"},
+  {id:"Z", label:"Fabiano Zettel", color:"#ea580c", size:30, x:0, y:-260, title:"Pastor · cunhado de Vorcaro · preso"},
+  {id:"E", label:"Eduardo Bolsonaro", color:"#b45309", size:26, x:-180, y:-180, title:"Ex-deputado · condenado pelo STF"},
+  {id:"N", label:"Nikolas Ferreira", color:"#db2777", size:26, x:-180, y:180, title:"Deputado federal (PL-MG)"},
+  {id:"A", label:"André Valadão", color:"#7c3aed", size:26, x:180, y:180, title:"Pastor da Lagoinha"},
+  {id:"ALC", label:"Alcazar Holdings", color:"#be123c", size:24, x:-420, y:-80, title:"Empresa de Willer · Flávio era 'usuário master'"},
+  {id:"C", label:"Careca do INSS", color:"#9a3412", size:26, x:-420, y:80, title:"Apontado como centro do esquema do INSS"},
+  {id:"L", label:"Lulinha", color:"#0d9488", size:22, x:-420, y:260, title:"Filho de Lula · investigado no STF"},
+  {id:"MASTER", label:"Banco Master", color:"#0f766e", size:26, x:520, y:0, title:"Banco liquidado pelo BC"},
+  {id:"J", label:"Jair Bolsonaro", color:"#166534", size:30, x:180, y:-180, title:"Ex-presidente · pai de Flávio"},
+  {id:"Q", label:"Fabrício Queiroz", color:"#713f12", size:28, x:420, y:-100, title:"Ex-assessor · operador da rachadinha"},
+  {id:"X", label:"Márcio Canela", color:"#701a75", size:24, x:180, y:300, title:"Prefeito de Belford Roxo · preso pela PF"},
+  {id:"D", label:"Adriano da Nóbrega", color:"#475569", size:26, x:420, y:180, title:"Miliciano · ex-capitão do Exército · morto em 2020"}
+];
+
+var TEIA_ARESTAS = [
+  {from:"F", to:"W", rel:"Amigo / Sócio de fato", why:"A PF encontrou Flávio como usuário master da conta da empresa de Willer (Alcazar) e há mensagens em que Flávio chama Willer de sócio.", status:"alleged", color:"#be123c", width:3, dashes:true},
+  {from:"F", to:"V", rel:"Financiou Dark Horse", why:"Vorcaro negociou com Flávio cerca de US$ 24 milhões para financiar o filme 'Dark Horse', sobre Jair Bolsonaro.", status:"doc", color:"#0f766e", width:2.5},
+  {from:"F", to:"K", rel:"Articulou indicação STF", why:"Flávio e Willer articularam a indicação de Kássio ao STF em 2020. Kássio depois votou pela anulação das provas contra Flávio.", status:"alleged", color:"#6d28d9", width:2, dashes:true},
+  {from:"F", to:"Z", rel:"Via Lagoinha", why:"Zettel é cunhado de Vorcaro e pastor da Lagoinha, ligando as famílias e os negócios.", status:"doc", color:"#ea580c", width:1.5},
+  {from:"F", to:"A", rel:"Conexão Lagoinha", why:"Valadão celebra o casamento de Zettel, é próximo das famílias Vorcaro e Bolsonaro e usa o caso na política.", status:"doc", color:"#7c3aed", width:1.2},
+  {from:"F", to:"E", rel:"Irmãos", why:"Eduardo é irmão de Flávio e foi condenado pelo STF por coação no processo sobre a tentativa de golpe.", status:"doc", color:"#b45309", width:1.5},
+  {from:"F", to:"N", rel:"Jatinho em 2022", why:"Nikolas usou o jatinho ligado a Vorcaro em 2022 e, em 2025, pediu ajuda a Vorcaro com um ativo de minério.", status:"doc", color:"#db2777", width:1.2},
+  {from:"F", to:"C", rel:"Contador em comum", why:"O contador do 'Careca do INSS' é o mesmo que cuida do escritório de Flávio Bolsonaro.", status:"alleged", color:"#9a3412", width:1.2, dashes:true},
+  {from:"F", to:"ALC", rel:"Usuário master", why:"Flávio tinha acesso de 'usuário master' à conta bancária da empresa de Willer, segundo relatório da PF.", status:"doc", color:"#be123c", width:2.5},
+  {from:"W", to:"ALC", rel:"Controlador", why:"Willer é o controlador formal da Alcazar Holdings, empresa que movimentou recursos do esquema.", status:"doc", color:"#be123c", width:2.5},
+  {from:"W", to:"C", rel:"Advogado do contador", why:"Willer é o advogado do contador do 'Careca do INSS' na Justiça.", status:"doc", color:"#9a3412", width:1.5},
+  {from:"W", to:"K", rel:"Articulou indicação STF", why:"Willer ajudou a articular a indicação de Kássio ao STF.", status:"alleged", color:"#6d28d9", width:1.8, dashes:true},
+  {from:"V", to:"MASTER", rel:"Dono", why:"Vorcaro era o dono e controlador do Banco Master, liquidado pelo BC em 2025.", status:"doc", color:"#0f766e", width:3},
+  {from:"V", to:"K", rel:"Pagamentos via Consult", why:"O Master pagou R$ 6,6 milhões a uma consultoria ligada ao filho de Kássio.", status:"alleged", color:"#6d28d9", width:2, dashes:true},
+  {from:"V", to:"Z", rel:"Cunhados", why:"Zettel é casado com a irmã de Vorcaro.", status:"doc", color:"#ea580c", width:1.8},
+  {from:"V", to:"A", rel:"Lagoinha / doações", why:"A família Vorcaro doava recursos para a Lagoinha e apoiou a Rede Super.", status:"doc", color:"#7c3aed", width:1.2},
+  {from:"V", to:"N", rel:"Jatinho em 2022", why:"O jatinho usado por Nikolas tinha Vorcaro como um dos donos.", status:"doc", color:"#db2777", width:1.2},
+  {from:"C", to:"L", rel:"Negociações via lobista", why:"Lulinha é investigado por tráfego de influência em favor das empresas do Careca.", status:"alleged", color:"#0d9488", width:1.8, dashes:true},
+  {from:"F", to:"J", rel:"Pai e mentor", why:"Jair articulou a nomeação do filho na Câmara em 2000 e a escolha de Kássio Nunes Marques para o STF em 2020.", status:"doc", color:"#166534", width:2.5},
+  {from:"F", to:"Q", rel:"Rachadinha", why:"Queiroz foi apontado pelo MP-RJ como operador do esquema de devolução de salários no gabinete de Flávio na ALERJ.", status:"alleged", color:"#713f12", width:2.5, dashes:true},
+  {from:"F", to:"X", rel:"Aliado 2026", why:"Flávio apoiou a candidatura de Canela ao Senado em 2026 e colocou a mãe como suplente da chapa — antes de Canela ser preso duas vezes pela PF.", status:"doc", color:"#701a75", width:1.8},
+  {from:"Q", to:"D", rel:"Cunhados", why:"Queiroz e Adriano da Nóbrega eram cunhados. Daniele, ex-mulher de Adriano, foi funcionária fantasma do gabinete de Flávio por 11 anos.", status:"doc", color:"#713f12", width:1.5, smooth:{type:"curvedCW", roundness:0.5}},
+  {from:"F", to:"D", rel:"Gabinete / Queiroz", why:"Adriano da Nóbrega é o elo entre Queiroz e o gabinete de Flávio: a ex-mulher dele era funcionária fantasma, e a mãe dele também ganhou cargo.", status:"alleged", color:"#475569", width:1.2, dashes:true}
+];
+
+var TEIA_INFO = {
+  F: { full:"Flávio Bolsonaro", role:"Senador (PL-RJ) · ex-candidato à Presidência em 2026", desc:"Centro da teia. Investigado no STF por financiamento do filme Dark Horse e por suspeita de participação societária de fato na Alcazar Holdings." },
+  V: { full:"Daniel Vorcaro", role:"Dono do Banco Master · preso preventivamente", desc:"Banqueiro. Preso em novembro de 2025 na operação que apura fraudes no Master." },
+  W: { full:"Willer Tomaz", role:"Advogado em Brasília · investigado pela PF", desc:"Amigo próximo de Flávio. Apontado como operador financeiro do esquema do INSS. Movimentou R$ 5 bi em bets em 2025." },
+  K: { full:"Kássio Nunes Marques", role:"Ministro do STF · presidente do TSE", desc:"Indicado ao STF em 2020 com articulação de Flávio e Willer. Votou pela anulação dos relatórios do Coaf que sustentavam a investigação contra Flávio." },
+  Z: { full:"Fabiano Zettel", role:"Pastor e empresário · cunhado de Vorcaro · preso", desc:"Casado com Natália Vorcaro. Administrava a unidade Belvedere da Lagoinha. Vendido apartamento a Willer com deságio de R$ 2 mi." },
+  C: { full:"Antônio Carlos Camilo Antunes (Careca do INSS)", role:"Apontado como centro do esquema do INSS · preso", desc:"Lobista apontado pela PF como articulador do desvio de recursos de aposentados do INSS. Mesmo contador que o escritório de Flávio Bolsonaro." },
+  L: { full:"Fábio Luiz Lula da Silva (Lulinha)", role:"Filho do presidente Lula · investigado", desc:"Investigado em três inquéritos do STF por suspeita de tráfico de influência em favor de empresas ligadas ao Careca do INSS." },
+  E: { full:"Eduardo Bolsonaro", role:"Ex-deputado federal · condenado pelo STF", desc:"Irmão de Flávio. Condenado em junho de 2026 a 4 anos e 2 meses por coação no curso do processo." },
+  N: { full:"Nikolas Ferreira", role:"Deputado federal (PL-MG)", desc:"Usou jatinho ligado a Vorcaro na campanha de 2022. Em áudio de março de 2025, pediu ajuda ao banqueiro com um ativo de minério." },
+  A: { full:"André Valadão", role:"Pastor global da Lagoinha · cantor gospel", desc:"Comanda a rede Lagoinha. Ligado à família Vorcaro há décadas. Criou a fintech Clava Forte." },
+  ALC: { full:"Alcazar Holdings", role:"Empresa controlada por Willer Tomaz", desc:"Empresa que tem Flávio Bolsonaro como 'usuário master' de sua conta bancária no Santander, segundo relatório da PF." },
+  MASTER: { full:"Banco Master", role:"Banco liquidado pelo BC em nov/2025", desc:"Banco de Vorcaro, liquidado após revelação de fraudes. Captava com CDBs de alto rendimento garantidos pelo FGC. Prejuízo estimado em R$ 40 bi ao fundo garantidor." },
+  J: { full:"Jair Bolsonaro", role:"Ex-presidente da República", desc:"Ex-presidente (2019–2022), ex-deputado federal por quase 30 anos. Pai de Flávio e figura central da política nacional." },
+  Q: { full:"Fabrício Queiroz", role:"Ex-assessor de Flávio na ALERJ", desc:"Ex-PM e ex-assessor de Flávio. Cunhado de Adriano da Nóbrega. Preso em 2020 na Operação Anjo, solto em 2021 por decisão do STF." },
+  X: { full:"Márcio Canela", role:"Prefeito de Belford Roxo (RJ) · preso pela PF", desc:"Aliado de Flávio em 2026. Preso pela PF como patrono político de organização criminosa armada." },
+  D: { full:"Adriano da Nóbrega", role:"Miliciano · ex-capitão do Exército · morto em 2020", desc:"Ex-marido de Daniele (funcionária fantasma do gabinete de Flávio por 11 anos). Cunhado de Fabrício Queiroz. Morto em operação na Bahia em 2020." }
+};
+
+var teiaNetwork=null;
+var teiaOverlay=$('teia-modal');
+var teiaInfo=$('teia-info'),teiaEmpty=$('teia-empty');
+var teiaLastFocus=null;
+
+function openTeia(){
+  teiaLastFocus = document.activeElement;
+  teiaOverlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(function(){
+    var closeBtn = document.getElementById('teia-close');
+    if(closeBtn) closeBtn.focus();
+  }, 80);
+  if(!teiaNetwork){
+    setTimeout(initTeia,50);
+  } else {
+    setTimeout(function(){teiaNetwork.redraw();teiaNetwork.fit({animation:{duration:400}})},100);
+  }
+}
+function closeTeia(){
+  teiaOverlay.classList.remove('open');
+  document.body.style.overflow='';
+  if(teiaLastFocus && typeof teiaLastFocus.focus === 'function'){
+    teiaLastFocus.focus();
+    teiaLastFocus = null;
+  }
+}
+$('teia-btn').onclick=openTeia;
+$('teia-close').onclick=closeTeia;
+teiaOverlay.addEventListener('click',function(e){if(e.target===teiaOverlay)closeTeia()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&teiaOverlay.classList.contains('open'))closeTeia()});
+document.addEventListener('keydown',function(e){
+  if(e.key !== 'Tab') return;
+  if(!teiaOverlay.classList.contains('open')) return;
+  var focusables = getFocusable(teiaOverlay);
+  if(!focusables.length) return;
+  var first = focusables[0];
+  var last = focusables[focusables.length - 1];
+  if(e.shiftKey && document.activeElement === first){
+    e.preventDefault();
+    last.focus();
+  } else if(!e.shiftKey && document.activeElement === last){
+    e.preventDefault();
+    first.focus();
+  }
+});
+
+function isDarkMode(){
+  var a=document.documentElement.getAttribute('data-theme');
+  if(a==='dark')return true;
+  if(a==='light')return false;
+  return matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function getFocusable(container){
+  return Array.prototype.slice.call(container.querySelectorAll(
+    'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  )).filter(function(el){return el.offsetParent !== null});
+}
+
+function initTeia(){
+  var container=$('teia-canvas');
+  var dark=isDarkMode();
+  var labelColor = dark?'#ede6dc':'#1c1814';
+
+  var nodes=new vis.DataSet(TEIA_NOS.map(function(n){
+    var imageSrc = n.image ? n.image : makeAvatar(n.label, n.color);
+    return {
+      id:n.id,
+      label:n.label,
+      title:n.title,
+      shape: 'circularImage',
+      image: imageSrc,
+      size: n.size,
+      color:{
+        background:n.color,
+        border: n.color,
+        highlight:{background:n.color,border:dark?'#fff':'#000'},
+        hover:{background:n.color,border:dark?'#fff':'#000'}
+      },
+      font:{
+        color:labelColor,
+        size: window.innerWidth <= 820 ? 16 : 12,
+        face:'IBM Plex Sans',
+        vadjust: 10,
+        strokeWidth: 3,
+        strokeColor: dark?'#1a160f':'#faf5ec',
+        bold:{color:labelColor,size: window.innerWidth <= 820 ? 14 : 12, face:'IBM Plex Sans',mod:'bold',strokeWidth:3,strokeColor: dark?'#1a160f':'#faf5ec'}
+      },
+      borderWidth: 3,
+      borderWidthSelected: 5,
+      shadow:{enabled:false},
+      x:n.x, y:n.y,
+      fixed:{x:true, y:true}
+    };
+  }));
+
+  var edges=new vis.DataSet(TEIA_ARESTAS.map(function(e){
+    return {
+      id: e.from + '-' + e.to,
+      from:e.from, to:e.to,
+      color:{color:e.color+'99', highlight:e.color, hover:e.color},
+      width:e.width||1.5,
+      dashes:e.dashes ? [4, 4] : false
+    };
+  }));
+
+  var data={nodes:nodes,edges:edges};
+  var isMobile = window.innerWidth <= 820;
+  var options={
+    nodes:{borderWidth:0, font:{multi:false}},
+    edges:{smooth:{enabled:false}},
+    physics:{ enabled: false },
+    interaction:{
+      hover: !isMobile,
+      hoverConnectedEdges: !isMobile,
+      tooltipDelay:200,
+      navigationButtons:false,
+      keyboard:false,
+      zoomView:true,
+      dragView:true,
+      multiselect:false,
+      selectConnectedEdges:false
+    }
+  };
+
+  teiaNetwork=new vis.Network(container,data,options);
+  setTimeout(function(){teiaNetwork.fit({ animation: false });}, 100);
+
+  teiaNetwork.on('click',function(params){
+    if(params.nodes.length > 0){
+      showNodeInfo(params.nodes[0]);
+    }
+    else if(params.edges.length > 0){
+      showEdgeInfo(params.edges[0]);
+    }
+    else {
+      resetTeia();
+    }
+  });
+
+  teiaNetwork.on('doubleClick',function(params){
+    if(params.nodes.length>0){
+      teiaNetwork.focus(params.nodes[0],{scale:1.4,animation:{duration:500,easingFunction:'easeInOutQuad'}});
+    }
+  });
+}
+
+function showEdgeInfo(edgeId){
+  var edge = teiaNetwork.body.data.edges.get(edgeId);
+  if(!edge) return;
+  var eOriginal = TEIA_ARESTAS.find(function(e){return (e.from===edge.from&&e.to===edge.to)||(e.from===edge.to&&e.to===edge.from)});
+  if(!eOriginal) return;
+
+  var nodeFrom = TEIA_NOS.find(function(n){return n.id===eOriginal.from});
+  var nodeTo = TEIA_NOS.find(function(n){return n.id===eOriginal.to});
+  var isAlleged = eOriginal.dashes;
+  var statusText = isAlleged ? 'Investigação' : 'Documentado';
+  var statusClass = isAlleged ? 'alleged' : '';
+
+  var avFrom = nodeFrom.image ? nodeFrom.image : makeAvatar(nodeFrom.label, nodeFrom.color);
+  var avTo = nodeTo.image ? nodeTo.image : makeAvatar(nodeTo.label, nodeTo.color);
+
+  var html =
+    '<button class="teia-back-btn" onclick="resetTeia()">← Voltar à visão geral</button>'+
+    '<div class="teia-info-header-edge">'+
+      '<div class="edge-visual">'+
+        '<div class="edge-node-mini" data-target="'+nodeFrom.id+'" style="--c:'+nodeFrom.color+'">'+
+          '<div class="av"><img src="'+avFrom+'"></div>'+
+          '<b>'+nodeFrom.label+'</b>'+
+        '</div>'+
+        '<div class="edge-arrow">↔</div>'+
+        '<div class="edge-node-mini" data-target="'+nodeTo.id+'" style="--c:'+nodeTo.color+'">'+
+          '<div class="av"><img src="'+avTo+'"></div>'+
+          '<b>'+nodeTo.label+'</b>'+
+        '</div>'+
+      '</div>'+
+      '<h3>'+eOriginal.rel+'</h3>'+
+      '<div class="badge"><span class="teia-conn-badge '+statusClass+'">'+statusText+'</span></div>'+
+    '</div>'+
+    '<div class="edge-why" style="--c:'+eOriginal.color+'">'+
+      '<strong>Por que estão conectados?</strong>'+
+      eOriginal.why+
+    '</div>'+
+    '<div class="edge-actions">'+
+      '<button class="btn-edge" data-target="'+nodeFrom.id+'" style="--c:'+nodeFrom.color+'">'+
+        '<span class="dot" style="background:'+nodeFrom.color+'"></span>Ir para '+nodeFrom.label+
+      '</button>'+
+      '<button class="btn-edge" data-target="'+nodeTo.id+'" style="--c:'+nodeTo.color+'">'+
+        '<span class="dot" style="background:'+nodeTo.color+'"></span>Ir para '+nodeTo.label+
+      '</button>'+
+    '</div>';
+
+  teiaInfo.innerHTML = html;
+  teiaInfo.classList.add('active');
+  teiaEmpty.style.display='none';
+  var sidebarEl = document.querySelector('.teia-sidebar');
+  sidebarEl.style.pointerEvents = 'none';
+  document.querySelector('.teia-shell').classList.add('has-selection');
+
+  setTimeout(function(){
+      if(teiaNetwork) {
+          var canvasEl = document.getElementById('teia-canvas');
+          if(canvasEl) teiaNetwork.setSize(canvasEl.clientWidth, canvasEl.clientHeight);
+          teiaNetwork.redraw();
+          teiaNetwork.fit({nodes: [nodeFrom.id, nodeTo.id], animation:{duration:400}});
+      }
+      sidebarEl.style.pointerEvents = 'auto';
+  }, 120);
+
+  var allNodes = TEIA_NOS.map(function(n){return n.id});
+  var keepNodes = [nodeFrom.id, nodeTo.id];
+  var dim = allNodes.filter(function(x){return keepNodes.indexOf(x)===-1});
+  var updates = dim.map(function(x){return {id:x, opacity:0.15}});
+  updates.push({id:nodeFrom.id, opacity:1});
+  updates.push({id:nodeTo.id, opacity:1});
+  teiaNetwork.body.data.nodes.update(updates);
+
+  teiaInfo.querySelectorAll('[data-target]').forEach(function(el){
+    el.onclick = function(e){
+      if(window.getSelection().toString()) return;
+      var target = el.getAttribute('data-target');
+      showNodeInfo(target);
+    };
+  });
+}
+
+function showNodeInfo(id){
+  var node=TEIA_NOS.find(function(n){return n.id===id});
+  if(!node)return;
+  var info=TEIA_INFO[id];
+  if(!info)return;
+
+  var connected=teiaNetwork.getConnectedNodes(id);
+  var edges=teiaNetwork.getConnectedEdges(id);
+  var edgesData=edges.map(function(eid){return teiaNetwork.body.data.edges.get(eid)});
+
+  var connHtml='';
+  connected.forEach(function(cid){
+    var cnode=TEIA_NOS.find(function(n){return n.id===cid});
+    if(!cnode)return;
+    var edge=edgesData.find(function(e){return (e.from===id&&e.to===cid)||(e.from===cid&&e.to===id)});
+    if(!edge)return;
+    var eOriginal=TEIA_ARESTAS.find(function(ee){return (ee.from===edge.from&&ee.to===edge.to)||(ee.from===edge.to&&ee.to===edge.from)});
+    var rel=eOriginal ? eOriginal.rel : 'Conexão';
+    var why=eOriginal ? eOriginal.why : '';
+    var isAlleged=eOriginal && eOriginal.dashes;
+    var statusText=eOriginal ? (isAlleged?'investigação':'documentado') : '';
+
+    connHtml+=
+      '<li class="teia-conn" data-target="'+cid+'" style="--c:'+cnode.color+'">'+
+        '<span class="teia-conn-dot" style="background:'+cnode.color+'"></span>'+
+        '<div class="teia-conn-body">'+
+          '<div class="teia-conn-name">'+cnode.label+'</div>'+
+          '<div class="teia-conn-rel">'+rel+'</div>'+
+          (why?'<div class="teia-conn-why">'+why+'</div>':'')+
+        '</div>'+
+        (statusText?'<span class="teia-conn-badge'+(isAlleged?' alleged':'')+'">'+statusText+'</span>':'')+
+      '</li>';
+  });
+
+  var avatarHTML = (function(){
+    if(node.image) return '<img src="'+node.image+'">';
+    var parts = info.full.trim().split(/\s+/);
+    var initials = (parts[0][0] + (parts.length > 1 ? parts[parts.length-1][0] : '')).toUpperCase();
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="0.3" y2="1">' +
+      '<stop offset="0%" stop-color="'+node.color+'"/>' +
+      '<stop offset="100%" stop-color="'+shadeColor(node.color,-50)+'"/>' +
+      '</linearGradient></defs>' +
+      '<circle cx="50" cy="50" r="48" fill="url(#g)"/>' +
+      '<text x="50" y="64" text-anchor="middle" font-family="Georgia, serif" font-size="38" font-weight="700" fill="white">'+initials+'</text>' +
+      '</svg>';
+    return '<img src="data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)+'">';
+  })();
+
+  teiaInfo.innerHTML=
+    '<button class="teia-back-btn" onclick="resetTeia()">← Voltar à visão geral</button>'+
+    '<div class="teia-info-header" style="--c:'+node.color+'">'+
+      '<div class="avatar">'+avatarHTML+'</div>'+
+      '<h3>'+info.full+'</h3>'+
+      '<span class="tag">'+node.id+'</span>'+
+      '<p>'+info.role+'</p>'+
+    '</div>'+
+    '<h4>Sobre</h4>'+
+    '<p style="font-size:12.5px;color:var(--mute);line-height:1.55;margin:0 0 18px">'+info.desc+'</p>'+
+    '<h4>Conexões ('+connected.length+')</h4>'+
+    '<ul class="teia-conn-list">'+connHtml+'</ul>';
+
+  teiaInfo.classList.add('active');
+  teiaEmpty.style.display='none';
+  var sidebarEl = document.querySelector('.teia-sidebar');
+  sidebarEl.style.pointerEvents = 'none';
+  document.querySelector('.teia-shell').classList.add('has-selection');
+
+  setTimeout(function(){
+      if(teiaNetwork) {
+          var canvasEl = document.getElementById('teia-canvas');
+          if(canvasEl) teiaNetwork.setSize(canvasEl.clientWidth, canvasEl.clientHeight);
+          teiaNetwork.redraw();
+          teiaNetwork.fit({nodes: [id].concat(connected), animation:{duration:400}});
+      }
+      sidebarEl.style.pointerEvents = 'auto';
+  }, 120);
+
+  teiaInfo.querySelectorAll('.teia-conn').forEach(function(el){
+    el.onclick=function(e){
+      if(window.getSelection().toString()) return;
+      var target=el.dataset.target;
+      showNodeInfo(target);
+    };
+  });
+
+  var allNodes=TEIA_NOS.map(function(n){return n.id});
+  var dim=allNodes.filter(function(x){return x!==id && connected.indexOf(x)===-1});
+  var updates=dim.map(function(x){return {id:x, opacity:0.15}});
+  updates.push({id:id, opacity:1});
+  connected.forEach(function(x){updates.push({id:x, opacity:1})});
+  teiaNetwork.body.data.nodes.update(updates);
+
+  // Edges: manter as conectadas em destaque, atenuar as demais
+  var edgeUpdates = TEIA_ARESTAS.map(function(e){
+    var isConnected = (e.from === id || e.to === id);
+    return {
+      id: e.from + '-' + e.to,
+      color: isConnected
+        ? {color: e.color+'99', highlight: e.color, hover: e.color}
+        : {color: 'rgba(150,150,150,0.12)'},
+      width: isConnected ? (e.width || 1.5) : 1
+    };
+  });
+  teiaNetwork.body.data.edges.update(edgeUpdates);
+}
+
+function resetTeia(){
+  hideNodeInfo();
+  setTimeout(function(){
+    if(teiaNetwork) {
+      teiaNetwork.redraw();
+      teiaNetwork.fit({animation:{duration:400}});
+    }
+  }, 100);
+}
+
+function hideNodeInfo(){
+  teiaInfo.classList.remove('active');
+  teiaEmpty.style.display='flex';
+  document.querySelector('.teia-shell').classList.remove('has-selection');
+  TEIA_NOS.forEach(function(n){
+    teiaNetwork.body.data.nodes.update({id:n.id, opacity:1});
+  });
+  TEIA_ARESTAS.forEach(function(e){
+    teiaNetwork.body.data.edges.update({
+      id: e.from + '-' + e.to,
+      color: {color: e.color+'99', highlight: e.color, hover: e.color},
+      width: e.width || 1.5
+    });
+  });
+}
+
+render();
+renderPropostas();
+onScroll();
+handleHash();
+</script>
+</body>
+</html>
