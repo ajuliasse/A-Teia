@@ -562,8 +562,7 @@ footer:before{content:"NOTA EDITORIAL";display:block;font-size:11px;font-weight:
 .cta-dossie-botoes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .btn-dossie{background:var(--V);color:#fff;border:none;border-radius:999px;padding:14px 24px;font:600 14px/1 "IBM Plex Sans",sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .15s}
 .btn-dossie:hover{transform:translateY(-2px);box-shadow:0 8px 20px color-mix(in srgb,var(--V) 35%,transparent)}
-.btn-teia-resumo{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:14px 24px;font:500 14px/1 "IBM Plex Sans",sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .15s}
-.btn-teia-resumo:hover{border-color:var(--ink);transform:translateY(-2px)}
+/* .btn-teia-resumo removido para unificar com o padrão .btn-dossie */
 
 /* Botão de voltar ao resumo (no dossiê completo) */
 .btn-voltar-resumo{
@@ -604,7 +603,7 @@ footer:before{content:"NOTA EDITORIAL";display:block;font-size:11px;font-weight:
   .desfecho-list li::before{left:5.5px}
   .desfecho-list li::after{left:15px;width:8px}
   .cta-dossie-botoes{flex-direction:column;align-items:stretch}
-  .btn-dossie,.btn-teia-resumo{justify-content:center}
+  .btn-dossie{justify-content:center}
 }
 
 </style>
@@ -683,7 +682,7 @@ footer:before{content:"NOTA EDITORIAL";display:block;font-size:11px;font-weight:
       <p>O dossiê completo tem 73 eventos, cada um com data, status e as matérias originais. Leva mais tempo. Mas cada linha é verificável.</p>
       <div class="cta-dossie-botoes">
         <button class="btn-dossie" onclick="showView('completo')">Ler o dossiê completo (73 eventos) →</button>
-        <button class="btn-teia-resumo" onclick="openTeia()">Ver a teia →</button>
+        <button class="btn-dossie" style="background:var(--ink);" onclick="openTeia()">Ver a teia →</button>
       </div>
     </section>
 
